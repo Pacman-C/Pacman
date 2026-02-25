@@ -135,15 +135,30 @@ GHOST PEN (cage centrale)
 ────────────────────────────────────────────────────────────────────────────────
 
   /pacman
-   ├── main.c
-   ├── game.c / game.h         ← état global, niveaux, score
-   ├── map.c / map.h           ← grille 28x31, pastilles, tunnels
-   ├── player.c / player.h     ← déplacement, collisions, vitesse
-   ├── ghost.c / ghost.h       ← IA (Blinky, Pinky, Inky, Clyde), modes
-   ├── render.c / render.h     ← SDL, sprites, animations, HUD
-   ├── timer.c / timer.h       ← gestion Scatter/Chase/Frightened timers
-   ├── assets/
-   │    └── sprites.bmp
+├── Makefile
+├── README.md
+│
+├── include/
+│   ├── common.h        ← types, constantes, enums, toutes les structs
+│   ├── map.h
+│   ├── pacman.h        ← (ex-player.h)
+│   ├── ghost.h         ← gère les 4 fantômes via GhostId
+│   ├── game.h
+│   └── render.h
+│
+├── src/
+│   ├── main.c
+│   ├── game.c
+│   ├── map.c
+│   ├── pacman.c        ← (ex-player.c)
+│   ├── ghost.c         ← comportement des 4 fantômes
+│   └── render.c
+│
+└── assets/
+    ├── sprites.bmp
+    └── sounds/
+        ├── chomp.wav
+        └── death.wav
 
 
 ────────────────────────────────────────────────────────────────────────────────
