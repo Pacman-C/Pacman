@@ -1,0 +1,281 @@
+Organisation Générale
+👥 Répartition des rôles
+
+Personne A → Moteur & Logique
+
+Structures de données (grille, entités)
+
+Déplacements
+
+Collisions
+
+IA des fantômes
+
+Gestion des états
+
+Personne B → Affichage & Gameplay
+
+SDL (fenêtre, rendu, sprites)
+
+Animation
+
+Gestion du temps
+
+Score / HUD
+
+Sons (si optionnel)
+
+⚠️ Important :
+Dès la séance 1, définissez une architecture commune pour pouvoir travailler indépendamment.
+
+🗂 Architecture recommandée
+/pacman
+ ├── main.c
+ ├── game.c / game.h
+ ├── map.c / map.h
+ ├── player.c / player.h
+ ├── ghost.c / ghost.h
+ ├── render.c / render.h
+ ├── assets/
+ │    ├── sprites.bmp
+📅 PLAN SUR 7 SÉANCES
+🟦 Séance 1 – Architecture & Base SDL
+🎯 Objectif :
+
+Avoir une fenêtre SDL fonctionnelle + affichage d’un sprite.
+
+👤 Personne A
+
+Définir les structures principales :
+
+typedef struct {
+    int width;
+    int height;
+    char grid[31][28];
+} Map;
+
+typedef struct {
+    int x, y;
+    int direction;
+} Entity;
+
+Créer map.h / map.c
+
+Charger une map statique en tableau
+
+👤 Personne B
+
+Initialisation SDL
+
+Création fenêtre + renderer
+
+Chargement BMP
+
+Affichage d’un sprite test
+
+🔗 À la fin :
+
+Fenêtre ouverte
+
+Une grille logique prête
+
+Un sprite affiché
+
+🟦 Séance 2 – Grille & Déplacement Pac-Man
+🎯 Objectif :
+
+Pac-Man se déplace dans le labyrinthe.
+
+👤 Personne A
+
+Implémenter :
+
+Déplacement par tuiles
+
+Gestion des collisions murs
+
+Système de directions (UP/DOWN/LEFT/RIGHT)
+
+Structure en grille (important pour algo)
+
+👤 Personne B
+
+Associer chaque case de la grille à un sprite
+
+Afficher le labyrinthe
+
+Gérer clavier SDL
+
+Animation simple Pac-Man
+
+🧠 Notions valorisées :
+
+Matrice 2D
+
+Vérification collision
+
+Séparation logique / affichage
+
+🟦 Séance 3 – Gommes & Score
+🎯 Objectif :
+
+Pac-Man mange les gommes.
+
+👤 Personne A
+
+Ajouter :
+
+Gestion des pastilles
+
+Suppression après passage
+
+Score
+
+Compteur de gommes restantes
+
+👤 Personne B
+
+Affichage score à l’écran
+
+Animation bouche Pac-Man
+
+Optimisation rendu
+
+🧠 Notions :
+
+Modification dynamique de matrice
+
+Compteur d’état global
+
+🟦 Séance 4 – Fantômes (Déplacement simple)
+🎯 Objectif :
+
+Fantômes qui bougent aléatoirement.
+
+👤 Personne A
+
+Structure Ghost
+
+Déplacement aléatoire valide
+
+Éviter murs
+
+Collision Pac-Man → mort
+
+👤 Personne B
+
+Affichage sprites fantômes
+
+Animation simple
+
+Reset position après mort
+
+🧠 Notions :
+
+Random contrôlé
+
+Algorithme de déplacement contraint
+
+🟦 Séance 5 – IA des Fantômes (Niveau avancé)
+🎯 Objectif :
+
+Comportement proche du vrai jeu.
+
+Inspiré du vrai Pac-Man :
+
+Blinky → poursuit
+
+Pinky → anticipe
+
+Inky → calcul vectoriel
+
+Clyde → fuit si proche
+
+👤 Personne A
+
+Implémenter :
+
+BFS (Breadth First Search) pour pathfinding
+OU
+
+Algorithme glouton vers cible
+
+Très bon point pour le projet 👌
+
+👤 Personne B
+
+Mode "scatter"
+
+Mode "chase"
+
+Gestion timers
+
+🧠 Notions :
+
+File (queue)
+
+Graphe implicite
+
+Algorithme de plus court chemin
+
+🟦 Séance 6 – Power Pellet & États
+🎯 Objectif :
+
+Mode "super Pac-Man"
+
+👤 Personne A
+
+Ajouter états :
+
+NORMAL
+
+FRIGHTENED
+
+DEAD
+
+Timer power pellet
+
+Fantômes vulnérables
+
+👤 Personne B
+
+Changement sprite fantômes bleus
+
+Clignotement fin timer
+
+Sons (optionnel)
+
+🧠 Notions :
+
+Machine à états
+
+Gestion temps réel
+
+🟦 Séance 7 – Finitions & Présentation
+🎯 Objectif :
+
+Version jouable et propre.
+
+👥 Ensemble
+
+Nettoyage code
+
+Commentaires
+
+Vérification fuites mémoire
+
+README
+
+Slides présentation
+
+🧠 Structures & Algorithmes à Mettre en Avant
+
+Pour impressionner :
+
+✅ Matrice 2D
+✅ Enum pour directions
+✅ Machine à états
+✅ BFS pour IA
+✅ Séparation MVC (logique / rendu)
+✅ Gestion du temps avec SDL_GetTicks()
+✅ Modularité fichiers
