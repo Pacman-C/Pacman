@@ -1,281 +1,304 @@
-Organisation Générale
-👥 Répartition des rôles
+================================================================================
+                     PLAN DE DÉVELOPPEMENT – PAC-MAN
+              Basé sur les règles officielles de l'arcade (Namco, 1980)
+================================================================================
+
+
+────────────────────────────────────────────────────────────────────────────────
+ RÈGLES DU JEU À IMPLÉMENTER
+────────────────────────────────────────────────────────────────────────────────
+
+OBJECTIF
+  Pac-Man doit manger toutes les pastilles et super-pastilles du labyrinthe
+  pour passer au niveau suivant. Il commence avec 3 vies (configurable).
+
+SCORING
+  Pastille (dot)             →    10 pts
+  Super-pastille             →    50 pts
+  Fantôme mangé (1er)        →   200 pts
+  Fantôme mangé (2e)         →   400 pts
+  Fantôme mangé (3e)         →   800 pts
+  Fantôme mangé (4e)         → 1 600 pts
+  Fruit bonus (cerise)       →   100 pts
+  Fruit bonus (fraise)       →   300 pts
+  … (selon le niveau)
+  Vie supplémentaire         → à 10 000 pts (par défaut)
+
+PAC-MAN
+  - Se déplace plus vite quand il ne mange pas de pastilles.
+  - Peut tourner les coins plus vite que les fantômes.
+  - Perd une vie s'il touche un fantôme en mode normal ou clignotant.
+  - Réapparition à sa position de départ après une mort.
+  - Game Over quand toutes les vies sont perdues.
+
+TUNNELS LATÉRAUX (WARP TUNNELS)
+  - Les deux sorties latérales sont connectées (sortir d'un côté = entrer de l'autre).
+  - Les fantômes traversent le tunnel à MOITIÉ de la vitesse de Pac-Man.
+  - Excellent moyen de distancer les fantômes.
+  - Attention : un fantôme peut entrer par l'autre extrémité simultanément.
+
+ZONES PROTÉGÉES (T-SECTIONS)
+  - Les allées en T au-dessus/dessous du ghost pen sont traversables par Pac-Man
+    mais PAS par les fantômes normaux.
+  - Technique : entrer par un côté du T et ressortir par l'autre pour semer.
+
+BONUS FRUIT
+  - Apparaît 2 fois par niveau sous le ghost pen.
+  - Les fruits varient selon le niveau (cerise → fraise → orange → pomme…).
+  - Durée d'apparition limitée (~10 secondes).
+
+
+────────────────────────────────────────────────────────────────────────────────
+ IA DES FANTÔMES (RÈGLES OFFICIELLES)
+────────────────────────────────────────────────────────────────────────────────
+
+Chaque fantôme alterne entre deux modes principaux : SCATTER et CHASE.
+
+MODE SCATTER (retour au coin)
+  Les fantômes abandonnent la chasse et retournent patrouiller leur coin.
+    Blinky (rouge) → coin haut-droite
+    Pinky  (rose)  → coin haut-gauche
+    Inky   (cyan)  → coin bas-droite
+    Clyde  (orange)→ coin bas-gauche
+  Lors du changement de mode, les fantômes INVERSENT leur direction.
+  Pac-Man peut les suivre en sécurité quelques secondes après ce changement.
+
+ALTERNANCE SCATTER / CHASE (niveau 1)
+  Scatter 7s → Chase 20s → Scatter 7s → Chase 20s →
+  Scatter 5s → Chase 20s → Scatter 5s → Chase ∞
+  (Les durées diminuent aux niveaux suivants.)
+
+MODE CHASE (poursuite – cible différente par fantôme)
+
+  BLINKY (rouge – Shadow)
+    Cible : position exacte de Pac-Man.
+    Se déplace vers la case qui réduit le plus la distance avec Pac-Man.
+    CRUISE ELROY : quand il reste peu de pastilles, Blinky accélère fortement.
+
+  PINKY (rose – Speedy)
+    Cible : 4 cases en avant de Pac-Man dans sa direction actuelle.
+    Tente de couper la route plutôt que de poursuivre directement.
+    Bug original (fidèle) : si Pac-Man regarde vers le haut, la cible est décalée
+    de 4 cases vers le haut ET 4 vers la gauche (overflow du code d'origine).
+
+  INKY (cyan – Bashful)
+    Ciblage vectoriel : prend le point 2 cases devant Pac-Man, calcule le vecteur
+    depuis Blinky jusqu'à ce point, puis DOUBLE ce vecteur → position cible d'Inky.
+    Comportement imprévisible : très dangereux quand Blinky est proche de Pac-Man.
+
+  CLYDE (orange – Pokey)
+    Si distance > 8 cases de Pac-Man : il poursuit comme Blinky.
+    Si distance < 8 cases de Pac-Man : il abandonne et retourne à son coin.
+    Semble erratique et peu dangereux, mais peut surprendre.
+
+MODE FRIGHTENED (vulnérable – Power Pellet)
+  - Déclenché quand Pac-Man mange une super-pastille (une dans chaque coin).
+  - Les fantômes deviennent bleus et se déplacent ALÉATOIREMENT.
+  - Pac-Man peut les manger : 200 → 400 → 800 → 1600 pts (chaîne consécutive).
+  - Clignotement blanc/bleu avant la fin du timer pour avertir le joueur.
+  - La durée du mode Frightened DIMINUE avec les niveaux (disparaît à partir du
+    niveau 17 : les fantômes n'inversent que leur direction sans devenir bleus).
+
+MODE DEAD (retour au pen)
+  - Seuls les yeux du fantôme sont visibles, ils retournent rapidement au ghost pen.
+  - Le fantôme ne peut pas toucher Pac-Man dans cet état.
+  - Il respawn au pen et reprend son comportement actif.
+
+GHOST PEN (cage centrale)
+  - Blinky sort immédiatement au début du niveau.
+  - Pinky, Inky et Clyde sortent après délai ou après X pastilles mangées.
+  - Les fantômes morts retournent au pen puis en ressortent.
+  - Pac-Man ne peut pas entrer dans le pen.
 
-Personne A → Moteur & Logique
 
-Structures de données (grille, entités)
+────────────────────────────────────────────────────────────────────────────────
+ RÉPARTITION DES RÔLES
+────────────────────────────────────────────────────────────────────────────────
+
+  Personne A → Moteur & Logique
+    - Structures de données (grille, entités)
+    - Déplacements & collisions
+    - IA des fantômes (4 comportements + modes)
+    - Machine à états complète
+    - Gestion des niveaux et vitesses
+
+  Personne B → Affichage & Gameplay
+    - SDL (fenêtre, rendu, sprites)
+    - Animation Pac-Man (bouche)
+    - Timers visuels (Scatter/Chase/Frightened)
+    - Score, HUD, vies
+    - Sons (optionnel)
+
 
-Déplacements
+────────────────────────────────────────────────────────────────────────────────
+ ARCHITECTURE RECOMMANDÉE
+────────────────────────────────────────────────────────────────────────────────
+
+  /pacman
+   ├── main.c
+   ├── game.c / game.h         ← état global, niveaux, score
+   ├── map.c / map.h           ← grille 28x31, pastilles, tunnels
+   ├── player.c / player.h     ← déplacement, collisions, vitesse
+   ├── ghost.c / ghost.h       ← IA (Blinky, Pinky, Inky, Clyde), modes
+   ├── render.c / render.h     ← SDL, sprites, animations, HUD
+   ├── timer.c / timer.h       ← gestion Scatter/Chase/Frightened timers
+   ├── assets/
+   │    └── sprites.bmp
+
+
+────────────────────────────────────────────────────────────────────────────────
+ PLAN SUR 7 SÉANCES
+────────────────────────────────────────────────────────────────────────────────
 
-Collisions
+SÉANCE 1 – Architecture & Base SDL
+  Objectif : Fenêtre SDL fonctionnelle + affichage d'un sprite.
+
+  Personne A
+    - Définir les structures (Map, Player, Entity, Direction enum)
+    - Créer map.h / map.c
+    - Charger la map classique Pac-Man (28x31) en tableau statique
+
+  Personne B
+    - Initialisation SDL, fenêtre + renderer
+    - Chargement BMP
+    - Affichage d'un sprite test
+
+  Résultat attendu : fenêtre ouverte, grille logique prête, sprite affiché.
+
+----
 
-IA des fantômes
+SÉANCE 2 – Grille & Déplacement Pac-Man
+  Objectif : Pac-Man se déplace avec les vraies règles de vitesse.
 
-Gestion des états
+  Personne A
+    - Déplacement par tuiles avec buffering de direction (anticiper les virages)
+    - Pac-Man ne traverse pas les murs
+    - Vitesse différenciée (avec/sans manger des pastilles)
+    - Gestion du tunnel latéral (warp gauche/droite)
+
+  Personne B
+    - Associer chaque case de la grille à un sprite (mur, pastille, vide)
+    - Afficher le labyrinthe complet
+    - Gérer input clavier SDL (direction bufferisée)
+    - Animation de la bouche Pac-Man (3-4 frames)
 
-Personne B → Affichage & Gameplay
-
-SDL (fenêtre, rendu, sprites)
-
-Animation
-
-Gestion du temps
-
-Score / HUD
-
-Sons (si optionnel)
-
-⚠️ Important :
-Dès la séance 1, définissez une architecture commune pour pouvoir travailler indépendamment.
-
-🗂 Architecture recommandée
-/pacman
- ├── main.c
- ├── game.c / game.h
- ├── map.c / map.h
- ├── player.c / player.h
- ├── ghost.c / ghost.h
- ├── render.c / render.h
- ├── assets/
- │    ├── sprites.bmp
-📅 PLAN SUR 7 SÉANCES
-🟦 Séance 1 – Architecture & Base SDL
-🎯 Objectif :
-
-Avoir une fenêtre SDL fonctionnelle + affichage d’un sprite.
-
-👤 Personne A
-
-Définir les structures principales :
-
-typedef struct {
-    int width;
-    int height;
-    char grid[31][28];
-} Map;
-
-typedef struct {
-    int x, y;
-    int direction;
-} Entity;
-
-Créer map.h / map.c
-
-Charger une map statique en tableau
-
-👤 Personne B
-
-Initialisation SDL
-
-Création fenêtre + renderer
-
-Chargement BMP
-
-Affichage d’un sprite test
-
-🔗 À la fin :
-
-Fenêtre ouverte
-
-Une grille logique prête
-
-Un sprite affiché
-
-🟦 Séance 2 – Grille & Déplacement Pac-Man
-🎯 Objectif :
-
-Pac-Man se déplace dans le labyrinthe.
-
-👤 Personne A
-
-Implémenter :
-
-Déplacement par tuiles
-
-Gestion des collisions murs
-
-Système de directions (UP/DOWN/LEFT/RIGHT)
-
-Structure en grille (important pour algo)
-
-👤 Personne B
-
-Associer chaque case de la grille à un sprite
-
-Afficher le labyrinthe
-
-Gérer clavier SDL
-
-Animation simple Pac-Man
-
-🧠 Notions valorisées :
-
-Matrice 2D
-
-Vérification collision
-
-Séparation logique / affichage
-
-🟦 Séance 3 – Gommes & Score
-🎯 Objectif :
-
-Pac-Man mange les gommes.
-
-👤 Personne A
-
-Ajouter :
-
-Gestion des pastilles
-
-Suppression après passage
-
-Score
-
-Compteur de gommes restantes
-
-👤 Personne B
-
-Affichage score à l’écran
-
-Animation bouche Pac-Man
-
-Optimisation rendu
-
-🧠 Notions :
-
-Modification dynamique de matrice
-
-Compteur d’état global
-
-🟦 Séance 4 – Fantômes (Déplacement simple)
-🎯 Objectif :
-
-Fantômes qui bougent aléatoirement.
-
-👤 Personne A
-
-Structure Ghost
-
-Déplacement aléatoire valide
-
-Éviter murs
-
-Collision Pac-Man → mort
-
-👤 Personne B
-
-Affichage sprites fantômes
-
-Animation simple
-
-Reset position après mort
-
-🧠 Notions :
-
-Random contrôlé
-
-Algorithme de déplacement contraint
-
-🟦 Séance 5 – IA des Fantômes (Niveau avancé)
-🎯 Objectif :
-
-Comportement proche du vrai jeu.
-
-Inspiré du vrai Pac-Man :
-
-Blinky → poursuit
-
-Pinky → anticipe
-
-Inky → calcul vectoriel
-
-Clyde → fuit si proche
-
-👤 Personne A
-
-Implémenter :
-
-BFS (Breadth First Search) pour pathfinding
-OU
-
-Algorithme glouton vers cible
-
-Très bon point pour le projet 👌
-
-👤 Personne B
-
-Mode "scatter"
-
-Mode "chase"
-
-Gestion timers
-
-🧠 Notions :
-
-File (queue)
-
-Graphe implicite
-
-Algorithme de plus court chemin
-
-🟦 Séance 6 – Power Pellet & États
-🎯 Objectif :
-
-Mode "super Pac-Man"
-
-👤 Personne A
-
-Ajouter états :
-
-NORMAL
-
-FRIGHTENED
-
-DEAD
-
-Timer power pellet
-
-Fantômes vulnérables
-
-👤 Personne B
-
-Changement sprite fantômes bleus
-
-Clignotement fin timer
-
-Sons (optionnel)
-
-🧠 Notions :
-
-Machine à états
-
-Gestion temps réel
-
-🟦 Séance 7 – Finitions & Présentation
-🎯 Objectif :
-
-Version jouable et propre.
-
-👥 Ensemble
-
-Nettoyage code
-
-Commentaires
-
-Vérification fuites mémoire
-
-README
-
-Slides présentation
-
-🧠 Structures & Algorithmes à Mettre en Avant
-
-Pour impressionner :
-
-✅ Matrice 2D
-✅ Enum pour directions
-✅ Machine à états
-✅ BFS pour IA
-✅ Séparation MVC (logique / rendu)
-✅ Gestion du temps avec SDL_GetTicks()
-✅ Modularité fichiers
+  Notions valorisées : Matrice 2D, buffering d'input, séparation logique/affichage.
+
+----
+
+SÉANCE 3 – Pastilles, Super-Pastilles & Score
+  Objectif : Pac-Man mange, le score s'incrémente, le niveau se termine.
+
+  Personne A
+    - Gestion pastilles (10 pts) et super-pastilles (50 pts)
+    - Suppression dans la grille après passage
+    - Compteur de pastilles restantes → fin de niveau
+    - Déclenchement mode FRIGHTENED sur super-pastille + timer
+    - Vie supplémentaire à 10 000 pts
+
+  Personne B
+    - Affichage score et vies (HUD)
+    - Animation mort de Pac-Man
+    - Transition entre niveaux (flash du labyrinthe)
+    - Super-pastilles clignotantes à l'écran
+
+  Notions : Modification dynamique de matrice, timer SDL_GetTicks().
+
+----
+
+SÉANCE 4 – Fantômes : Déplacement & Ghost Pen
+  Objectif : Fantômes actifs avec sortie du pen et déplacement valide.
+
+  Personne A
+    - Structure Ghost (GhostMode enum, GhostType enum)
+    - Sortie du pen dans l'ordre avec temporisateurs
+    - Les fantômes ne peuvent PAS faire demi-tour spontanément
+    - Demi-vitesse dans les tunnels
+    - Collision Pac-Man / Fantôme → mort
+
+  Personne B
+    - Sprites des 4 fantômes (couleurs différentes)
+    - Sprites yeux (mode DEAD)
+    - Sprites bleus + clignotement (mode FRIGHTENED)
+    - Reset positions après mort de Pac-Man
+
+  Notions : Enum états, contraintes de déplacement, structures imbriquées.
+
+----
+
+SÉANCE 5 – IA des Fantômes (Comportements officiels)
+  Objectif : Chaque fantôme a son comportement unique fidèle à l'arcade.
+
+  Personne A
+    - Ciblage Blinky  : position exacte de Pac-Man
+    - Ciblage Pinky   : 4 cases devant Pac-Man (+ bug directionnel original)
+    - Ciblage Inky    : calcul vectoriel depuis Blinky
+    - Ciblage Clyde   : poursuite OU fuite selon distance (seuil 8 cases)
+    - Alternance Scatter/Chase avec timers précis
+    - BFS ou algorithme glouton pour choisir la direction vers la cible
+
+  Personne B
+    - Mode debug optionnel : affichage de la cible de chaque fantôme
+    - Gestion visuelle du demi-tour lors du changement de mode
+    - Timers d'alternance Scatter/Chase avec SDL_GetTicks()
+
+  Notions : BFS, graphe implicite, ciblage vectoriel.
+
+----
+
+SÉANCE 6 – Power Pellet complet, Bonus Fruit & Niveaux
+  Objectif : Toutes les mécaniques du jeu officiel.
+
+  Personne A
+    - Scoring chaîné des fantômes (200→400→800→1600)
+    - Cruise Elroy pour Blinky (accélération fin de niveau)
+    - Fruit bonus : 2 apparitions par niveau, disparition après ~10s
+    - Progression des niveaux : vitesses croissantes, durée frightened décroissante
+
+  Personne B
+    - Sprites des fruits selon le niveau (cerise, fraise, orange…)
+    - Affichage du score de chaque fantôme mangé à l'endroit de la capture
+    - Clignotement des fantômes en fin de mode Frightened
+    - Sons optionnels (waka-waka, sirène, mort)
+
+  Notions : Machine à états, gestion temps réel, progression de difficulté.
+
+----
+
+SÉANCE 7 – Finitions & Présentation
+  Objectif : Version jouable, propre, présentable.
+
+  Ensemble
+    - Nettoyage du code + commentaires
+    - Vérification des fuites mémoire (valgrind)
+    - Écran titre / Game Over / victoire
+    - README complet
+    - Slides de présentation
+
+
+────────────────────────────────────────────────────────────────────────────────
+ STRUCTURES & ALGORITHMES À METTRE EN AVANT
+────────────────────────────────────────────────────────────────────────────────
+
+  Matrice 2D              → Labyrinthe, détection collisions
+  Enum + Machine à états  → Modes fantômes (SCATTER/CHASE/FRIGHTENED/DEAD)
+  BFS / algo glouton      → Pathfinding des fantômes vers leur cible
+  Ciblage vectoriel       → IA d'Inky
+  Buffering d'input       → Anticipation des virages de Pac-Man
+  SDL_GetTicks()          → Tous les timers du jeu
+  Séparation MVC          → Logique (A) / Rendu (B) indépendants
+  Modularité fichiers     → Un fichier par responsabilité
+
+
+────────────────────────────────────────────────────────────────────────────────
+ POINTS IMPORTANTS DÈS LA SÉANCE 1
+────────────────────────────────────────────────────────────────────────────────
+
+  - Définir une architecture commune AVANT de travailler en parallèle.
+  - Les vitesses doivent être en cases/seconde (pas cases/frame) pour être
+    indépendantes du framerate.
+  - Les fantômes ne peuvent JAMAIS faire demi-tour spontanément (sauf lors
+    d'un changement de mode Scatter <-> Chase).
+  - Le choix de direction des fantômes se fait à la PROCHAINE CASE, pas en continu.
+
+================================================================================
