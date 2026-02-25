@@ -1,10 +1,22 @@
 CC      = gcc
-CFLAGS  = -Wall -Iinclude $(shell sdl2-config --cflags)
-LIBS    = $(shell sdl2-config --libs)
-SRC     = $(wildcard src/*.c)
+CFLAGS  = -Wall -Wextra -Iinclude $(shell sdl2-config --cflags)
+LIBS    = $(shell sdl2-config --libs) -lm
+SRC_DIR = src
+OBJ_DIR = obj
+SRC     = $(wildcard $(SRC_DIR)/*.c)
+OBJ     = $(SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
+TARGET  = pacman
 
-pacman: $(SRC)
-    $(CC) $(CFLAGS) $^ -o $@ $(LIBS)
+all: $(TARGET)
+
+$(TARGET): $(OBJ)
+	$(CC) $(OBJ) -o $@ $(LIBS)
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+	@mkdir -p $(OBJ_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-    rm -f pacman
+	rm -rf $(OBJ_DIR) $(TARGET)
+
+.PHONY: all clean
