@@ -1,6 +1,10 @@
-#include "game.h"
+#include "../include/game.h"
+#include "render.h"
+#include <SDL2/SDL.h>
 
-int main() {
+int main(int argc, char *argv[]) {
+    (void)argc; (void)argv;  // évite les warnings "unused"
+
     Game game;
     game_init(&game);
     render_init();
