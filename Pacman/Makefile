@@ -8,6 +8,7 @@ OBJ     = $(SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 TARGET  = pacman
 
 all: $(TARGET)
+	-cp C:/msys64/mingw64/bin/SDL2.dll .
 
 $(TARGET): $(OBJ)
 	$(CC) $(OBJ) -o $@ $(LIBS)
