@@ -12,20 +12,19 @@
 #define WINDOW_H     (MAP_ROWS * TILE_SIZE)
  
 /* ── Tuiles ──────────────────────────────────── */
-#define TILE_EMPTY   ' '
-#define TILE_WALL    '#'
-#define TILE_PELLET     '.' 
-#define TILE_POWER_PELLET  'O'
-#define TILE_DOOR    '-' // porte de la cage
-#define TILE_TUNNEL  'T'    // passage qui TP entre les côtés gauche/droite
+#define TILE_EMPTY        ' '
+#define TILE_WALL         '#'
+#define TILE_PELLET       '.'   // petite pastille
+#define TILE_SUPER_PELLET 'O'   // grosse pastille (rend les fantômes bleus)
+#define TILE_DOOR         '-'   // porte de la cage
+#define TILE_TUNNEL       'T'   // passage qui TP entre gauche/droite
  
 /* ── Points ──────────────────────────────────── */
-#define PTS_DOT          10
-#define PTS_PELLET       50
-#define PTS_POWER_PELLET 500
-#define PTS_GHOST_BASE   200    // x2 à chaque fantôme consécutif
-#define PTS_CHERRY       100    // cerise niveau 1
-#define EXTRA_LIFE_SCORE 10000
+#define PTS_PELLET        10
+#define PTS_SUPER_PELLET  50
+#define PTS_GHOST_BASE    200   // x2 à chaque fantôme consécutif
+#define PTS_CHERRY        100   // cerise niveau 1
+#define EXTRA_LIFE_SCORE  10000
  
 /* ── Vitesses (tuiles/seconde) ───────────────── */
 #define SPEED_PACMAN         9.5f
@@ -55,10 +54,10 @@ typedef enum {
 /* ── États de jeu ────────────────────────────── */
 typedef enum {
     STATE_MENU,
-    STATE_READY,        // écran "READY!" avant départ
+    STATE_READY,
     STATE_PLAYING,
     STATE_PAUSED,
-    STATE_PACMAN_DEAD,  // animation mort en cours
+    STATE_PACMAN_DEAD,
     STATE_GAMEOVER,
     STATE_WIN
 } GameState;
@@ -68,9 +67,9 @@ typedef enum {
     GHOST_SCATTER,
     GHOST_CHASE,
     GHOST_FRIGHTENED,
-    GHOST_DEAD,         // yeux qui rentrent au pen
-    GHOST_PEN,          // encore dans la cage
-    GHOST_LEAVING       // en train de sortir
+    GHOST_DEAD,
+    GHOST_PEN,
+    GHOST_LEAVING
 } GhostMode;
  
 /* ── Identifiants fantômes ───────────────────── */
@@ -85,17 +84,17 @@ typedef enum {
 /* ── Carte ───────────────────────────────────── */
 typedef struct {
     char grid[MAP_ROWS][MAP_COLS];
-    int  pellet_count;     // gommes restantes
-    int  total_pellets;     // pour le score et les bonus
+    int  pellet_count;    // pastilles restantes (petites + grosses)
+    int  total_pellets;   // total au début du niveau
 } Map;
  
 /* ── Entité générique ────────────────────────── */
 typedef struct {
-    int       x, y;         // position en tuiles
-    int       px, py;       // position en pixels (interpolation)
+    int       x, y;
+    int       px, py;
     Direction dir;
-    Direction next_dir;     // buffering input (anticipation virage)
-    float     speed;        // tuiles/seconde
+    Direction next_dir;
+    float     speed;
 } Entity;
  
 /* ── Fantôme ─────────────────────────────────── */
@@ -103,9 +102,9 @@ typedef struct {
     Entity    entity;
     GhostId   id;
     GhostMode mode;
-    GhostMode mode_before_fright;   // restaurer après frightened
-    int       scatter_x, scatter_y; // coin de patrouille
-    int       target_x, target_y;  // case cible courante (BFS/debug)
+    GhostMode mode_before_fright;
+    int       scatter_x, scatter_y;
+    int       target_x, target_y;
     Uint32    mode_timer;
     int       is_alive;
 } Ghost;
@@ -128,8 +127,8 @@ typedef struct {
     GameState state;
     int       level;
     int       high_score;
-    int       ghosts_eaten_combo;   // nb fantômes mangés ce frightened (pour x2)
-    Uint32    frightened_start;     // SDL_GetTicks() quand frightened a commencé
+    int       ghosts_eaten_combo;
+    Uint32    frightened_start;
     Uint32    last_tick;
 } Game;
  
