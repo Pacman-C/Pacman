@@ -5,6 +5,7 @@
 /* Contexte global au fichier — inaccessible depuis l'extérieur */
 static SDL_Window   *g_win = NULL;
 static SDL_Renderer *g_ren = NULL;
+static SDL_Texture  *g_sprite = NULL; 
 
 void render_init(void)
 {
@@ -29,22 +30,42 @@ void render_init(void)
         fprintf(stderr, "SDL_CreateRenderer: %s\n", SDL_GetError());
         exit(1);
     }
+
+       SDL_Surface *surf = SDL_LoadBMP("assets/sprites.bmp");
+    if (!surf) {
+        fprintf(stderr, "SDL_LoadBMP: %s\n", SDL_GetError());
+        exit(1);
+    }
+    g_sprite = SDL_CreateTextureFromSurface(g_ren, surf);
+    SDL_FreeSurface(surf);
+    if (!g_sprite) {
+        fprintf(stderr, "SDL_CreateTextureFromSurface: %s\n", SDL_GetError());
+        exit(1);
+    }
 }
 
 void render_frame(const Game *game)
 {
-    (void)game; /* sera utilisé dès la séance 2 */
+    (void)game;
 
     SDL_SetRenderDrawColor(g_ren, 0, 0, 0, 255);
     SDL_RenderClear(g_ren);
 
-    /* TODO séance 2 : dessiner la grille, Pac-Man, les fantômes */
+    /* Sprite test — affiché au centre */
+    SDL_Rect src = { 0, 0, TILE_SIZE, TILE_SIZE };
+    SDL_Rect dst = {
+        WINDOW_W / 2 - TILE_SIZE / 2,
+        WINDOW_H / 2 - TILE_SIZE / 2,
+        TILE_SIZE, TILE_SIZE
+    };
+    SDL_RenderCopy(g_ren, g_sprite, &src, &dst);
 
     SDL_RenderPresent(g_ren);
 }
 
 void render_quit(void)
 {
+    if (g_sprite) SDL_DestroyTexture(g_sprite);
     if (g_ren) SDL_DestroyRenderer(g_ren);
     if (g_win) SDL_DestroyWindow(g_win);
     SDL_Quit();
