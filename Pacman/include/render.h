@@ -4,7 +4,7 @@
 #include "base.h"
 
 void render_init(void);
-void render_frame(Game *game);
+void render_frame(const Game *game);
 void render_quit(void);
 
 #endif /* RENDER_H */
