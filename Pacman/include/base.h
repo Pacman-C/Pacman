@@ -90,10 +90,10 @@ typedef struct {
  
 /* ── Entité générique ────────────────────────── */
 typedef struct {
-    int       x, y;
-    int       px, py;
-    Direction dir;
-    Direction next_dir;
+    int       x, y; // La position logique (en indices de tableau : ex. ligne 23, colonne 14).
+    int       px, py; // La position pixel pour le rendu (ex. 368px, 496px).
+    Direction dir; // Direction actuelle de déplacement (DIR_UP, DIR_DOWN, DIR_LEFT, DIR_RIGHT)
+    Direction next_dir; // Direction que le joueur a input mais pas encore appliquée (pour les virages serrés)
     float     speed;
 } Entity;
  
