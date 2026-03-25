@@ -42,7 +42,7 @@ void map_init(Map *map) {
         for (int x = 0; x < MAP_COLS; x++) {
             map->grid[y][x] = layout[y][x];
             
-            if (map->grid[y][x] == TILE_PELLET || map->grid[y][x] == TILE_SUPER_PELLET) {
+            if (map->grid[y][x] == TILE_PELLET || map->grid[y][x] == TILE_POWER_PELLET) {
                 map->pellet_count++;
             }
         }
