@@ -17,8 +17,8 @@ void game_init(Game *game) {
 
     game->player.entity.x = 14; // Position de départ
     game->player.entity.y = 23;
-    game->player.entity.px = 14 * TILE_SIZE; // Position pixel pour le rendu
-    game->player.entity.py = 23 * TILE_SIZE;
+    game->player.entity.px = 14 * TILE_SIZE + TILE_SIZE / 2; // Position pixel pour le rendu
+    game->player.entity.py = 23 * TILE_SIZE + TILE_SIZE / 2;
     game->player.entity.dir = DIR_LEFT;
     game->player.entity.next_dir = DIR_LEFT;
     game->player.entity.speed = SPEED_PACMAN; // Vitesse de déplacement en pixels par seconde
@@ -34,10 +34,26 @@ void game_update(Game *game, float delta) {
 void handle_input(Game *game) {
     const Uint8 *keys = SDL_GetKeyboardState(NULL);
 
-    if (keys[SDL_SCANCODE_UP])    pacman_set_dir(&game->player, DIR_UP);
-    if (keys[SDL_SCANCODE_DOWN])  pacman_set_dir(&game->player, DIR_DOWN);
-    if (keys[SDL_SCANCODE_LEFT])  pacman_set_dir(&game->player, DIR_LEFT);
-    if (keys[SDL_SCANCODE_RIGHT]) pacman_set_dir(&game->player, DIR_RIGHT);
+    if (keys[SDL_SCANCODE_UP]){
+        pacman_set_dir(&game->player, DIR_UP);
+        game->state = STATE_PLAYING;
+
+    }
+    if (keys[SDL_SCANCODE_DOWN]){
+        pacman_set_dir(&game->player, DIR_DOWN);
+        game->state = STATE_PLAYING;
+
+    }
+    if (keys[SDL_SCANCODE_LEFT]){
+        pacman_set_dir(&game->player, DIR_LEFT);
+        game->state = STATE_PLAYING;
+
+    }
+    if (keys[SDL_SCANCODE_RIGHT]){
+        pacman_set_dir(&game->player, DIR_RIGHT);
+        game->state = STATE_PLAYING;
+
+    }
 
     if (game->state == STATE_READY)
         game->state = STATE_PLAYING;

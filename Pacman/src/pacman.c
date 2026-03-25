@@ -9,8 +9,9 @@ static int can_move(Map *map, int x, int y, Direction dir)
     int nx = WRAP_COL(x + DX[dir]);
     int ny = y + DY[dir];
     char tile = get_tile(map, nx, ny);
-
-    if (tile == TILE_WALL || tile == TILE_DOOR)
+    printf("can_move: pos(%d,%d) dir=%d -> next(%d,%d) tile='%c'\n",
+           x, y, dir, nx, ny, tile);
+    if (tile == TILE_WALL || tile == TILE_DOOR || tile == TILE_EMPTY)
     {
         return 0;
     }
@@ -42,11 +43,11 @@ void pacman_update(Player *p, Map *map, float delta)
 
     float move = e->speed * TILE_SIZE * delta;
 
-    e->px += (int)(DX[e->dir] * move);
-    e->py += (int)(DY[e->dir] * move);
+    e->px += DX[e->dir] * move;
+    e->py += DY[e->dir] * move;
 
-    e->x = e->px / TILE_SIZE;
-    e->y = e->py / TILE_SIZE;
+    e->x = (int)((e->px - TILE_SIZE / 2) / TILE_SIZE);
+    e->y = (int)((e->py - TILE_SIZE / 2) / TILE_SIZE);
 
     char tile = get_tile(map, e->x, e->y);
 

@@ -46,7 +46,6 @@ void render_init(void)
 
 void render_frame(const Game *game)
 {
-    (void)game;
 
     SDL_SetRenderDrawColor(g_ren, 0, 0, 0, 255);
     SDL_RenderClear(g_ren);
@@ -88,6 +87,7 @@ void render_frame(const Game *game)
                     // SDL_Rect pp = { cx - 5, cy - 5, 10, 10 };
                     // SDL_RenderFillRect(g_ren, &pp);
                     int r2 = 4;
+            
             for (int dy = -r2; dy <= r2; dy++)
                 for (int dx = -r2; dx <= r2; dx++)
                     if (dx*dx + dy*dy <= r2*r2)
@@ -101,6 +101,10 @@ void render_frame(const Game *game)
                                   dst.w, 3 };
                 SDL_RenderFillRect(g_ren, &door);
             }
+            else if (tile == TILE_TUNNEL) {
+                SDL_SetRenderDrawColor(g_ren, 0, 0, 0, 255);
+                SDL_RenderFillRect(g_ren, &dst);
+            }
         }
     }
 
@@ -108,8 +112,8 @@ void render_frame(const Game *game)
     Uint32 t = SDL_GetTicks();
     int mouth_open = (t / 150) % 2;
 
-    int cx = game->player.entity.px + TILE_SIZE / 2;
-    int cy = game->player.entity.py + TILE_SIZE / 2;
+    int cx = (int)game->player.entity.px;
+    int cy = (int)game->player.entity.py;
     int radius = TILE_SIZE / 2 - 1;
 
     SDL_SetRenderDrawColor(g_ren, 255, 255, 0, 255);
