@@ -216,6 +216,8 @@ SÉANCE 3 – Pastilles, Super-Pastilles & Score
     - Animation mort de Pac-Man
     - Transition entre niveaux (flash du labyrinthe)
     - Super-pastilles clignotantes à l'écran
+    - adapter le responsive design (quand je mets en plein ecran ça doit s'adapter)
+
 
   Notions : Modification dynamique de matrice, timer SDL_GetTicks().
 
