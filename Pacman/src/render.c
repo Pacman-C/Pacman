@@ -112,8 +112,8 @@ void render_frame(const Game *game)
     Uint32 t = SDL_GetTicks();
     int mouth_open = (t / 150) % 2;
 
-    int cx = (int)game->player.entity.px;
-    int cy = (int)game->player.entity.py;
+    int cx = (game->player.entity.x * TILE_SIZE) + TILE_SIZE / 2;
+    int cy = (game->player.entity.y * TILE_SIZE) + TILE_SIZE / 2;
     int radius = TILE_SIZE / 2 - 1;
 
     SDL_SetRenderDrawColor(g_ren, 255, 255, 0, 255);

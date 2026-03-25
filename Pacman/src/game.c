@@ -17,8 +17,8 @@ void game_init(Game *game) {
 
     game->player.entity.x = 14; // Position de départ
     game->player.entity.y = 23;
-    game->player.entity.px = 14 * TILE_SIZE + TILE_SIZE / 2; // Position pixel pour le rendu
-    game->player.entity.py = 23 * TILE_SIZE + TILE_SIZE / 2;
+    game->player.entity.px = 14 * TILE_SIZE;
+    game->player.entity.py = 23 * TILE_SIZE;
     game->player.entity.dir = DIR_LEFT;
     game->player.entity.next_dir = DIR_LEFT;
     game->player.entity.speed = SPEED_PACMAN; // Vitesse de déplacement en pixels par seconde
