@@ -1,22 +1,45 @@
 #include "../include/base.h"
 #include "../include/render.h"
-
-int main(void)
+#include "../include/game.h"
+#include <SDL2/SDL.h>
+  
+  int main(int argc, char *argv[])
 {
+    (void)argc; (void)argv;
+
+    Game game;
+    SDL_Event e;
+    int running = 1;
+
+    game_init(&game);
     render_init();
 
-    int running = 1;
-    SDL_Event e;
+    game.last_tick = SDL_GetTicks();
 
-    while (running) {
-        while (SDL_PollEvent(&e)) {
+    while (running && game.state != STATE_GAMEOVER)
+    {
+        /* --- Gestion des événements --- */
+        while (SDL_PollEvent(&e))
+        {
             if (e.type == SDL_QUIT)
                 running = 0;
+
             if (e.type == SDL_KEYDOWN &&
                 e.key.keysym.sym == SDLK_ESCAPE)
                 running = 0;
         }
-        render_frame(NULL); /* NULL ok tant que game n'est pas init */
+
+        /* --- Timing --- */
+        Uint32 now   = SDL_GetTicks();
+        float  delta = (now - game.last_tick) / 1000.0f;
+        game.last_tick = now;
+
+        /* --- Logique du jeu --- */
+        handle_input(&game);
+        game_update(&game, delta);
+
+        /* --- Rendu --- */
+        render_frame(&game);
     }
 
     render_quit();
