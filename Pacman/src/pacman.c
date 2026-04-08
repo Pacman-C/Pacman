@@ -17,77 +17,81 @@ static int can_move(Map *map, int x, int y, Direction dir)
     }
     return 1;
 }
+
 void pacman_update(Player *p, Map *map, float delta)
 {
     Entity *e = &p->entity;
 
+    /* Tuile actuelle depuis le centre */
+    e->x = (int)((e->px - TILE_SIZE / 2) / TILE_SIZE);
+    e->y = (int)((e->py - TILE_SIZE / 2) / TILE_SIZE);
+
+    /* Changement de direction si possible */
     if (e->next_dir != DIR_NONE)
+{
+    /* Vérifie que Pac-Man est assez centré sur sa case */
+    float center_px = e->x * TILE_SIZE + TILE_SIZE / 2;
+    float center_py = e->y * TILE_SIZE + TILE_SIZE / 2;
+    float dist_x = e->px - center_px;
+    float dist_y = e->py - center_py;
+    int centered = (dist_x * dist_x + dist_y * dist_y) < 16.0f;
+
+    if (centered && can_move(map, e->x, e->y, e->next_dir))
     {
-        if (can_move(map, e->x, e->y, e->next_dir))
-        {
-            e->dir = e->next_dir;
-            e->next_dir = DIR_NONE;
-        }
+        e->dir = e->next_dir;
+        e->next_dir = DIR_NONE;
     }
+}
 
     if (e->dir == DIR_NONE)
-    {
         return;
-    }
 
     if (!can_move(map, e->x, e->y, e->dir))
     {
+        e->px = e->x * TILE_SIZE + TILE_SIZE / 2;
+        e->py = e->y * TILE_SIZE + TILE_SIZE / 2;
         return;
     }
 
     float move = e->speed * TILE_SIZE * delta;
+    e->px += DX[e->dir] * move;
+    e->py += DY[e->dir] * move;
 
-    float new_px = e->px + DX[e->dir] * move;
-    float new_py = e->py + DY[e->dir] * move;
+    /* Force centrage sur l'axe perpendiculaire */
+    if (e->dir == DIR_LEFT || e->dir == DIR_RIGHT)
+        e->py = e->y * TILE_SIZE + TILE_SIZE / 2;
+    if (e->dir == DIR_UP || e->dir == DIR_DOWN)
+        e->px = e->x * TILE_SIZE + TILE_SIZE / 2;
 
-    int new_tx = (int)(new_px / TILE_SIZE);
-    int new_ty = (int)(new_py / TILE_SIZE);
+    /* Recalcule la tuile après déplacement */
+    e->x = (int)((e->px - TILE_SIZE / 2) / TILE_SIZE);
+    e->y = (int)((e->py - TILE_SIZE / 2) / TILE_SIZE);
 
-    // Vérifier la tuile destination avant de bouger
-    char next_tile = get_tile(map, new_tx, new_ty);
-    if (next_tile == TILE_WALL || next_tile == TILE_DOOR)
-    {
-        // Snap Pac-Man au centre de sa tuile actuelle
-        e->px = e->x * TILE_SIZE;
-        e->py = e->y * TILE_SIZE;
-        return;
-    }
-
-    e->px = new_px;
-    e->py = new_py;
-    e->x  = new_tx;
-    e->y  = new_ty;
-
-    // Tunnel
+    /* Tunnel */
     char tile = get_tile(map, e->x, e->y);
     if (tile == TILE_TUNNEL)
     {
-        if (e->x == 0)
+        if (e->dir == DIR_LEFT)
         {
-            e->x = MAP_COLS - 1;
+            e->x  = MAP_COLS - 2;
+            e->px = e->x * TILE_SIZE + TILE_SIZE / 2;
         }
-        else
+        else if (e->dir == DIR_RIGHT)
         {
-            e->x = 0;
+            e->x  = 1;
+            e->px = e->x * TILE_SIZE + TILE_SIZE / 2;
         }
-        e->px = e->x * TILE_SIZE;
+        e->py = e->y * TILE_SIZE + TILE_SIZE / 2;
+        tile = get_tile(map, e->x, e->y);
     }
 
-    // Vitesse
+    /* Vitesse */
     if (tile == TILE_PELLET || tile == TILE_POWER_PELLET)
-    {
         e->speed = SPEED_PACMAN_EATING;
-    }
     else
-    {
         e->speed = SPEED_PACMAN;
-    }
 
+    /* Manger */
     if (tile == TILE_PELLET)
     {
         set_tile(map, e->x, e->y, TILE_EMPTY);
@@ -102,8 +106,9 @@ void pacman_update(Player *p, Map *map, float delta)
         p->power_timer = SDL_GetTicks();
         map->pellet_count--;
     }
-
 }
+
+
 void pacman_set_dir(Player *p, Direction dir)
 {
     p->entity.next_dir = dir;

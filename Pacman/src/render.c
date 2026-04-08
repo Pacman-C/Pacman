@@ -173,8 +173,8 @@ void render_frame(const Game *game)
                         /* adapte selon la direction */
                         Direction dir = game->player.entity.dir;
                         if (dir == DIR_LEFT)  adx = -dx;
-                        if (dir == DIR_UP)  { adx = dy;  ady = -dx; }
-                        if (dir == DIR_DOWN){ adx = -dy; ady = dx;  }
+                        if (dir == DIR_UP)  { adx = -dy; ady = dx; }
+                        if (dir == DIR_DOWN){ adx = dy;  ady = -dx;  }
                         if (adx > 0 && abs(ady) < adx)
                             continue; /* zone bouche */
                     }
