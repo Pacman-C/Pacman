@@ -92,7 +92,7 @@ typedef struct {
 /* ── Entité générique ────────────────────────── */
 typedef struct {
     int       x, y;         // position en tuiles
-    int       px, py;       // position en pixels (interpolation)
+    float       px, py;       // position en pixels (interpolation)
     Direction dir;
     Direction next_dir;     // buffering input (anticipation virage)
     float     speed;        // tuiles/seconde
