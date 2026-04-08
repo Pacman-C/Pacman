@@ -1,5 +1,6 @@
 #include "../include/pacman.h"
 #include "../include/map.h"
+#include "../include/game.h"
 
 static const int DX[] = { 0,  0, -1,  1};
 static const int DY[] = {-1,  1,  0,  0};
@@ -86,6 +87,22 @@ void pacman_update(Player *p, Map *map, float delta)
     {
         e->speed = SPEED_PACMAN;
     }
+
+    if (tile == TILE_PELLET)
+    {
+        set_tile(map, e->x, e->y, TILE_EMPTY);
+        map->pellet_count--;
+        p->score += PTS_DOT;
+    }
+    else if (tile == TILE_POWER_PELLET)
+    {
+        p->score += PTS_POWER_PELLET;
+        set_tile(map, e->x, e->y, TILE_EMPTY);
+        p->is_powered = 1;
+        p->power_timer = SDL_GetTicks();
+        map->pellet_count--;
+    }
+
 }
 void pacman_set_dir(Player *p, Direction dir)
 {

@@ -29,6 +29,31 @@ void game_init(Game *game) {
 void game_update(Game *game, float delta) {
     if (game->state != STATE_PLAYING) return;
     pacman_update(&game->player, &game->map, delta);
+
+    if (game->map.pellet_count == 0)
+    {
+        game->level++;
+        map_init(&game->map);
+        game->player.entity.x = 14; // Position de départ
+        game->player.entity.y = 23;
+        game->player.entity.px = 14 * TILE_SIZE;
+        game->player.entity.py = 23 * TILE_SIZE;
+    }
+
+    if (game->player.is_powered)
+    {
+        Uint32 now = SDL_GetTicks();
+        if (now - game->player.power_timer > FRIGHTENED_DURATION)
+        {
+            game->player.is_powered = 0;
+            game->ghosts_eaten_combo = 0;
+        }
+    }
+
+    if (game->player.score >= EXTRA_LIFE_SCORE && game->player.lives == 3)
+    {
+        game->player.lives++;
+    }
 }
 
 void handle_input(Game *game) {
