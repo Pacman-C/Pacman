@@ -2,9 +2,6 @@
 #include "../include/map.h"
 #include "../include/game.h"
 
-static const int DX[] = { 0,  0, -1,  1};
-static const int DY[] = {-1,  1,  0,  0};
-
 static int can_move(Map *map, int x, int y, Direction dir)
 {
     int nx = WRAP_COL(x + DX[dir]);

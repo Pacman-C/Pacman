@@ -1,8 +1,11 @@
 #include "../include/game.h"
 #include "../include/map.h"
+
 #include <string.h>
+
 #include "../include/base.h"
 #include "../include/pacman.h"
+#include "../include/ghosts.h"
 
 void game_init(Game *game) {
     map_init(&game->map);
@@ -23,12 +26,17 @@ void game_init(Game *game) {
     game->player.entity.next_dir = DIR_LEFT;
     game->player.entity.speed = SPEED_PACMAN; // Vitesse de déplacement en pixels par seconde
 
-    //@TODO: Initialisation des fantômes (position, mode, etc.)
+    ghost_init(game->ghosts);
+    
 }
 
 void game_update(Game *game, float delta) {
-    if (game->state != STATE_PLAYING) return;
+    if (game->state != STATE_PLAYING) {
+        return;
+    }
+
     pacman_update(&game->player, &game->map, delta);
+    ghost_update(game->ghosts, &game->map, &game->player, delta, game);
 
     if (game->map.pellet_count == 0)
     {
@@ -38,6 +46,7 @@ void game_update(Game *game, float delta) {
         game->player.entity.y = 23;
         game->player.entity.px = 14 * TILE_SIZE;
         game->player.entity.py = 23 * TILE_SIZE;
+        ghost_init(game->ghosts);
     }
 
     if (game->player.is_powered)
