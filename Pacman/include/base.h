@@ -51,6 +51,9 @@ typedef enum {
     DIR_LEFT  =  2,
     DIR_RIGHT =  3
 } Direction;
+
+static const int DX[] = { 0,  0, -1,  1};
+static const int DY[] = {-1,  1,  0,  0};
  
 /* ── États de jeu ────────────────────────────── */
 typedef enum {
