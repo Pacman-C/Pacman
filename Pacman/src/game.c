@@ -25,7 +25,7 @@ void game_init(Game *game) {
     game->player.entity.dir = DIR_LEFT;
     game->player.entity.next_dir = DIR_LEFT;
     game->player.entity.speed = SPEED_PACMAN; // Vitesse de déplacement en pixels par seconde
-
+    game->death_reset_done = 0;
     ghost_init(game->ghosts);
     
 }
@@ -57,6 +57,17 @@ void game_update(Game *game, float delta) {
             game->player.is_powered = 0;
             game->ghosts_eaten_combo = 0;
         }
+    }
+    if (game->state == STATE_PACMAN_DEAD && !game->death_reset_done)
+    {
+        ghost_init(game->ghosts);
+
+        game->player.entity.x = 14;
+        game->player.entity.y = 23;
+        game->player.entity.px = 14 * TILE_SIZE;
+        game->player.entity.py = 23 * TILE_SIZE;
+
+        game->death_reset_done = 1;
     }
 
     if (game->player.score >= EXTRA_LIFE_SCORE && game->player.lives == 3)
@@ -91,4 +102,6 @@ void handle_input(Game *game) {
 
     if (game->state == STATE_READY)
         game->state = STATE_PLAYING;
+        game->death_reset_done = 0;
+        
 }

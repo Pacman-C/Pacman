@@ -134,6 +134,7 @@ typedef struct {
     int       ghosts_eaten_combo;   // nb fantômes mangés ce frightened (pour x2)
     Uint32    frightened_start;     // SDL_GetTicks() quand frightened a commencé
     Uint32    last_tick;
+     int death_reset_done;
 } Game;
  
 /* ── Macros utilitaires ──────────────────────── */

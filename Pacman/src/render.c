@@ -48,140 +48,108 @@ void render_init(void)
 
 void render_frame(const Game *game)
 {
-    
-
     SDL_SetRenderDrawColor(g_ren, 0, 0, 0, 255);
     SDL_RenderClear(g_ren);
 
-    /* Flash labyrinthe si niveau gagné */
     Uint32 t = SDL_GetTicks();
     int flash = (game->state == STATE_WIN) ? (t / 200) % 2 : 0;
 
-    /* Grille */
+    /* ================= MAP ================= */
     for (int r = 0; r < MAP_ROWS; r++) {
         for (int c = 0; c < MAP_COLS; c++) {
+
             char tile = game->map.grid[r][c];
             SDL_Rect dst = { c * TILE_SIZE, r * TILE_SIZE, TILE_SIZE, TILE_SIZE };
 
             if (tile == TILE_WALL) {
-                /* Mur bleu foncé avec bordure claire — blanc si flash */
                 if (flash) {
                     SDL_SetRenderDrawColor(g_ren, 255, 255, 255, 255);
                     SDL_RenderFillRect(g_ren, &dst);
                 } else {
                     SDL_SetRenderDrawColor(g_ren, 0, 0, 139, 255);
                     SDL_RenderFillRect(g_ren, &dst);
-                    SDL_SetRenderDrawColor(g_ren, 33, 33, 255, 255);
-                    SDL_Rect border = { dst.x + 1, dst.y + 1,
-                                        dst.w - 2, dst.h - 2 };
-                    SDL_RenderDrawRect(g_ren, &border);
                 }
             }
             else if (tile == TILE_PELLET) {
-                /* Pastille ronde */
                 int cx = c * TILE_SIZE + TILE_SIZE / 2;
                 int cy = r * TILE_SIZE + TILE_SIZE / 2;
-                SDL_SetRenderDrawColor(g_ren, 255, 184, 151, 255); /* beige rosé */
-                SDL_RenderDrawPoint(g_ren, cx,   cy);
-                SDL_RenderDrawPoint(g_ren, cx+1, cy);
-                SDL_RenderDrawPoint(g_ren, cx,   cy+1);
-                SDL_RenderDrawPoint(g_ren, cx+1, cy+1);
+
+                SDL_SetRenderDrawColor(g_ren, 255, 184, 151, 255);
+                SDL_RenderDrawPoint(g_ren, cx, cy);
             }
             else if (tile == TILE_POWER_PELLET) {
-                /* Super pastille — plus grande, clignotante */
                 if ((t / 300) % 2) {
                     int cx = c * TILE_SIZE + TILE_SIZE / 2;
                     int cy = r * TILE_SIZE + TILE_SIZE / 2;
+
                     SDL_SetRenderDrawColor(g_ren, 255, 184, 151, 255);
-                    int r2 = 4;
-                    for (int dy = -r2; dy <= r2; dy++)
-                        for (int dx = -r2; dx <= r2; dx++)
-                            if (dx*dx + dy*dy <= r2*r2)
-                                SDL_RenderDrawPoint(g_ren, cx + dx, cy + dy);
-                }
-            }
-            else if (tile == TILE_DOOR) {
-                /* Porte de la cage — trait rose horizontal */
-                SDL_SetRenderDrawColor(g_ren, 255, 182, 255, 255);
-                SDL_Rect door = { dst.x, dst.y + TILE_SIZE/2 - 1,
-                                  dst.w, 3 };
-                SDL_RenderFillRect(g_ren, &door);
-            }
-            else if (tile == TILE_TUNNEL) {
-                /* tunnel — fond noir, rien à afficher */
-                SDL_SetRenderDrawColor(g_ren, 0, 0, 0, 255);
-                SDL_RenderFillRect(g_ren, &dst);
-            }
-        }
-    }
-
-    /* HUD — vies en bas à gauche (cercles jaunes) */
-    int radius = 6;
-
-    for (int i = 0; i < game->player.lives; i++) {
-        int cx = 20 + i * 20;
-        int cy = WINDOW_H - 15;
-
-        SDL_SetRenderDrawColor(g_ren, 255, 255, 0, 255);
-
-        for (int dy = -radius; dy <= radius; dy++) {
-            for (int dx = -radius; dx <= radius; dx++) {
-                if (dx*dx + dy*dy <= radius*radius) {
-                    // bouche ouverte vers la droite
-                    if (dx > 0 && abs(dy) < dx)
-                        continue;
-
-                    SDL_RenderDrawPoint(g_ren, cx + dx, cy + dy);
+                    SDL_Rect p = { cx - 2, cy - 2, 4, 4 };
+                    SDL_RenderFillRect(g_ren, &p);
                 }
             }
         }
     }
 
-    /* Pac-Man — animation mort ou normal */
-    if (game->state == STATE_PACMAN_DEAD) {
-        /* Animation mort — bouche qui s'ouvre progressivement */
-        Uint32 elapsed = SDL_GetTicks() - game->frightened_start;
-        int r2 = TILE_SIZE / 2 - 1;
-        SDL_SetRenderDrawColor(g_ren, 255, 255, 0, 255);
-        for (int dy = -r2; dy <= r2; dy++) {
-            for (int dx = -r2; dx <= r2; dx++) {
-                if (dx*dx + dy*dy <= r2*r2) {
-                    if (abs(dy) < dx * (int)elapsed / 900)
-                        continue;
-                    SDL_RenderDrawPoint(g_ren,
-                        (int)game->player.entity.px + dx,
-                        (int)game->player.entity.py + dy);
-                }
+    /* ================= PACMAN ================= */
+    int cx = (int)game->player.entity.px;
+    int cy = (int)game->player.entity.py;
+    int radius = TILE_SIZE / 2 - 1;
+
+    SDL_SetRenderDrawColor(g_ren, 255, 255, 0, 255);
+
+    for (int dy = -radius; dy <= radius; dy++) {
+        for (int dx = -radius; dx <= radius; dx++) {
+            if (dx * dx + dy * dy <= radius * radius) {
+                SDL_RenderDrawPoint(g_ren, cx + dx, cy + dy);
             }
         }
-    } else {
-        /* Pac-Man — cercle jaune avec bouche */
-        int mouth_open = (t / 150) % 2;
-        int cx = (int)game->player.entity.px;
-        int cy = (int)game->player.entity.py;
-        int radius = TILE_SIZE / 2 - 1;
+    }
 
-        SDL_SetRenderDrawColor(g_ren, 255, 255, 0, 255);
+    /* ================= GHOSTS ================= */
+    for (int i = 0; i < GHOST_COUNT; i++)
+    {
+        Ghost *g = &game->ghosts[i];
 
-        /* Dessine un cercle rempli pixel par pixel */
-        for (int dy = -radius; dy <= radius; dy++) {
-            for (int dx = -radius; dx <= radius; dx++) {
-                if (dx * dx + dy * dy <= radius * radius) {
-                    /* Bouche ouverte : exclut un triangle vers la droite */
-                    if (mouth_open) {
-                        int adx = dx, ady = dy;
-                        /* adapte selon la direction */
-                        Direction dir = game->player.entity.dir;
-                        if (dir == DIR_LEFT)  adx = -dx;
-                        if (dir == DIR_UP)  { adx = -dy; ady = dx; }
-                        if (dir == DIR_DOWN){ adx = dy;  ady = -dx;  }
-                        if (adx > 0 && abs(ady) < adx)
-                            continue; /* zone bouche */
-                    }
-                    SDL_RenderDrawPoint(g_ren, cx + dx, cy + dy);
-                }
-            }
+        SDL_Rect dst = {
+            (int)g->entity.px,
+            (int)g->entity.py,
+            TILE_SIZE,
+            TILE_SIZE
+        };
+
+        SDL_Rect src = {0, 0, TILE_SIZE, TILE_SIZE};
+
+        /* NORMAL + SCATTER + CHASE + PEN + LEAVING */
+        if (g->mode == GHOST_SCATTER ||
+            g->mode == GHOST_CHASE ||
+            g->mode == GHOST_LEAVING ||
+            g->mode == GHOST_PEN)
+        {
+            src.x = g->id * TILE_SIZE;
+            src.y = 0;
         }
+
+        /* FRIGHTENED */
+        else if (g->mode == GHOST_FRIGHTENED)
+        {
+            int blink = (t / 200) % 2;
+            src.y = TILE_SIZE;
+            src.x = (blink == 0) ? 0 : TILE_SIZE;
+        }
+
+        /* DEAD */
+        else if (g->mode == GHOST_DEAD)
+        {
+            src.y = 2 * TILE_SIZE;
+
+            if (g->entity.dir == DIR_LEFT)      src.x = 0;
+            else if (g->entity.dir == DIR_RIGHT) src.x = TILE_SIZE;
+            else if (g->entity.dir == DIR_UP)    src.x = 2 * TILE_SIZE;
+            else if (g->entity.dir == DIR_DOWN)  src.x = 3 * TILE_SIZE;
+            else src.x = 0;
+        }
+
+        SDL_RenderCopy(g_ren, g_sprite, &src, &dst);
     }
 
     SDL_RenderPresent(g_ren);
