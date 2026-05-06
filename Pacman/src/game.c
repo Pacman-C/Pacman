@@ -1,8 +1,11 @@
 #include "../include/game.h"
 #include "../include/map.h"
+
 #include <string.h>
+
 #include "../include/base.h"
 #include "../include/pacman.h"
+#include "../include/ghosts.h"
 
 void game_init(Game *game) {
     map_init(&game->map);
@@ -22,13 +25,43 @@ void game_init(Game *game) {
     game->player.entity.dir = DIR_LEFT;
     game->player.entity.next_dir = DIR_LEFT;
     game->player.entity.speed = SPEED_PACMAN; // Vitesse de déplacement en pixels par seconde
+    game->death_reset_done = 0;
+    ghost_init(game->ghosts);
 
-    //@TODO: Initialisation des fantômes (position, mode, etc.)
+    game->scatter_chase_index = 0;
+    game->scatter_chase_timer = SDL_GetTicks();
+    
 }
 
 void game_update(Game *game, float delta) {
-    if (game->state != STATE_PLAYING) return;
+
+    if (game->state == STATE_PACMAN_DEAD && !game->death_reset_done)
+    {
+        game->player.lives--;
+        if (game->player.lives <= 0)
+        {
+            game->state = STATE_GAMEOVER;
+            return;
+        }
+
+        ghost_init(game->ghosts);
+
+        game->player.entity.x = 14;
+        game->player.entity.y = 23;
+        game->player.entity.px = 14 * TILE_SIZE;
+        game->player.entity.py = 23 * TILE_SIZE;
+        game->death_reset_done = 0;
+        game->state = STATE_PLAYING;
+        game->player.entity.dir      = DIR_LEFT;
+        game->player.entity.next_dir = DIR_NONE;
+    }
+
+    if (game->state != STATE_PLAYING) {
+        return;
+    }
+
     pacman_update(&game->player, &game->map, delta);
+    ghost_update(game->ghosts, &game->map, &game->player, delta, game);
 
     if (game->map.pellet_count == 0)
     {
@@ -38,15 +71,39 @@ void game_update(Game *game, float delta) {
         game->player.entity.y = 23;
         game->player.entity.px = 14 * TILE_SIZE;
         game->player.entity.py = 23 * TILE_SIZE;
+        ghost_init(game->ghosts);
     }
 
     if (game->player.is_powered)
     {
+        for (int i = 0; i < GHOST_COUNT; i++)
+        {
+            Ghost *g = &game->ghosts[i];
+            if (g->mode == GHOST_SCATTER || g->mode == GHOST_CHASE)
+            {
+                g->mode_before_fright = g->mode;
+                g->mode = GHOST_FRIGHTENED;
+                g->entity.dir = opposite(g->entity.dir);
+            }
+        }
+        game->player.is_powered = 0;
+    }
+
+    if (game->player.power_timer > 0)
+    {
         Uint32 now = SDL_GetTicks();
         if (now - game->player.power_timer > FRIGHTENED_DURATION)
         {
-            game->player.is_powered = 0;
+            game->player.power_timer = 0;
             game->ghosts_eaten_combo = 0;
+            for (int i = 0; i < GHOST_COUNT; i++)
+            {
+                Ghost *g = &game->ghosts[i];
+                if (g->mode == GHOST_FRIGHTENED)
+                {
+                    g->mode = g->mode_before_fright;
+                }
+            }
         }
     }
 
@@ -80,6 +137,9 @@ void handle_input(Game *game) {
 
     }
 
-    if (game->state == STATE_READY)
+    if (game->state == STATE_READY) {
         game->state = STATE_PLAYING;
+        game->death_reset_done = 0;
+    }
 }
+        
