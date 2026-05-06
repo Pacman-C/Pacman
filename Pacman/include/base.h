@@ -134,9 +134,13 @@ typedef struct {
     int       ghosts_eaten_combo;   // nb fantômes mangés ce frightened (pour x2)
     Uint32    frightened_start;     // SDL_GetTicks() quand frightened a commencé
     Uint32    last_tick;
-     int death_reset_done;
+    int death_reset_done;
+    int    scatter_chase_index;
+    Uint32 scatter_chase_timer;
 } Game;
- 
+
+
+
 /* ── Macros utilitaires ──────────────────────── */
 #define DIST_SQ(ax, ay, bx, by) \
     (((ax)-(bx))*((ax)-(bx)) + ((ay)-(by))*((ay)-(by)))
