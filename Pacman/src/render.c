@@ -184,26 +184,46 @@ void render_frame(const Game *game)
 
     {
         int cx     = (int)game->player.entity.px;
-        int cy     = (int)game->player.entity.py;
-        int radius = TILE_SIZE / 2 - 1;
-        int mouth  = (t / 150) % 2;
+int cy     = (int)game->player.entity.py;
+int radius = TILE_SIZE / 2 - 1;
 
-        SDL_SetRenderDrawColor(g_ren, 255, 255, 0, 255);
-        for (int dy = -radius; dy <= radius; dy++) {
-            for (int dx = -radius; dx <= radius; dx++) {
-                if (dx*dx + dy*dy <= radius*radius) {
-                    if (mouth) {
-                        int adx = dx, ady = dy;
-                        Direction dir = game->player.entity.dir;
-                        if (dir == DIR_LEFT)  adx = -dx;
-                        if (dir == DIR_UP)  { adx = -dy; ady =  dx; }
-                        if (dir == DIR_DOWN){ adx =  dy; ady = -dx; }
-                        if (adx > 0 && abs(ady) < adx) continue;
-                    }
-                    SDL_RenderDrawPoint(g_ren, cx + dx, cy + dy);
-                }
+SDL_SetRenderDrawColor(g_ren, 255, 255, 0, 255);
+
+if (game->state == STATE_PACMAN_DEAD) {
+    /* Bouche qui s'ouvre progressivement jusqu'à disparaître */
+    Uint32 elapsed = SDL_GetTicks() - game->frightened_start;
+    int angle = (elapsed * 90) / 800;  /* 0 à 90 degrés en 800ms */
+    if (angle > 90) angle = 90;
+
+    for (int dy = -radius; dy <= radius; dy++) {
+        for (int dx = -radius; dx <= radius; dx++) {
+            if (dx*dx + dy*dy <= radius*radius) {
+                /* Exclure un triangle qui grandit */
+                if (abs(dy) < dx * angle / 90)
+                    continue;
+                SDL_RenderDrawPoint(g_ren, cx + dx, cy + dy);
             }
         }
+    }
+} else {
+    /* Animation normale */
+    int mouth = (t / 150) % 2;
+    for (int dy = -radius; dy <= radius; dy++) {
+        for (int dx = -radius; dx <= radius; dx++) {
+            if (dx*dx + dy*dy <= radius*radius) {
+                if (mouth) {
+                    int adx = dx, ady = dy;
+                    Direction dir = game->player.entity.dir;
+                    if (dir == DIR_LEFT)  adx = -dx;
+                    if (dir == DIR_UP)  { adx = -dy; ady =  dx; }
+                    if (dir == DIR_DOWN){ adx =  dy; ady = -dx; }
+                    if (adx > 0 && abs(ady) < adx) continue;
+                }
+                SDL_RenderDrawPoint(g_ren, cx + dx, cy + dy);
+            }
+        }
+    }
+}
     }
 
     for (int i = 0; i < GHOST_COUNT; i++) {
@@ -299,6 +319,10 @@ void render_frame(const Game *game)
                         SDL_RenderDrawPoint(g_ren, lx + dx, ly + dy);
         }
     }
+    char score_buf[32];
+    SDL_snprintf(score_buf, sizeof(score_buf), "%d", game->player.score);
+    SDL_Color yellow = {255, 255, 0, 255};
+    draw_string(WINDOW_W / 2 - 20, WINDOW_H - 12, score_buf, yellow);
 
     SDL_RenderPresent(g_ren);
 }
