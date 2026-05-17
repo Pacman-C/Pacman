@@ -20,8 +20,8 @@ void game_init(Game *game) {
 
     game->player.entity.x = 14; // Position de départ
     game->player.entity.y = 23;
-    game->player.entity.px = 14 * TILE_SIZE;
-    game->player.entity.py = 23 * TILE_SIZE;
+    game->player.entity.px = 14 * TILE_SIZE + TILE_SIZE / 2;
+    game->player.entity.py = 23 * TILE_SIZE + TILE_SIZE / 2;
     game->player.entity.dir = DIR_LEFT;
     game->player.entity.next_dir = DIR_LEFT;
     game->player.entity.speed = SPEED_PACMAN; // Vitesse de déplacement en pixels par seconde
@@ -48,9 +48,9 @@ void game_update(Game *game, float delta) {
 
         game->player.entity.x = 14;
         game->player.entity.y = 23;
-        game->player.entity.px = 14 * TILE_SIZE;
-        game->player.entity.py = 23 * TILE_SIZE;
-        game->death_reset_done = 0;
+        game->player.entity.px = 14 * TILE_SIZE + TILE_SIZE / 2;
+        game->player.entity.py = 23 * TILE_SIZE + TILE_SIZE / 2;
+        game->death_reset_done = 1;
         game->state = STATE_PLAYING;
         game->player.entity.dir      = DIR_LEFT;
         game->player.entity.next_dir = DIR_NONE;
@@ -69,8 +69,8 @@ void game_update(Game *game, float delta) {
         map_init(&game->map);
         game->player.entity.x = 14; // Position de départ
         game->player.entity.y = 23;
-        game->player.entity.px = 14 * TILE_SIZE;
-        game->player.entity.py = 23 * TILE_SIZE;
+        game->player.entity.px = 14 * TILE_SIZE + TILE_SIZE / 2;
+        game->player.entity.py = 23 * TILE_SIZE + TILE_SIZE / 2;
         ghost_init(game->ghosts);
     }
 
@@ -86,6 +86,7 @@ void game_update(Game *game, float delta) {
                 g->entity.dir = opposite(g->entity.dir);
             }
         }
+        game->frightened_start = SDL_GetTicks();
         game->player.is_powered = 0;
     }
 
