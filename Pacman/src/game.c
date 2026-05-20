@@ -93,7 +93,7 @@ void game_update(Game *game, float delta) {
     if (game->player.power_timer > 0)
     {
         Uint32 now = SDL_GetTicks();
-        if (now - game->player.power_timer > FRIGHTENED_DURATION)
+        if (now - game->player.power_timer > FRIGHTENED_DURATION_LVL(game->level))
         {
             game->player.power_timer = 0;
             game->ghosts_eaten_combo = 0;
@@ -111,6 +111,38 @@ void game_update(Game *game, float delta) {
     if (game->player.score >= EXTRA_LIFE_SCORE && game->player.lives == 3)
     {
         game->player.lives++;
+    }
+
+    // Apparition du fruit
+    int eaten = game->map.total_pellets - game->map.pellet_count;
+    if (game->fruit_spawn_count == 0 && eaten >= FRUIT_SPAWN_1)
+    {
+        game->fruit_x = 13;
+        game->fruit_y = 17;
+        set_tile(&game->map, game->fruit_x, game->fruit_y, TILE_FRUIT);
+        game->fruit_active = 1;
+        game->fruit_timer  = SDL_GetTicks();
+        game->fruit_spawn_count++;
+    }
+    if (game->fruit_spawn_count == 1 && eaten >= FRUIT_SPAWN_2)
+    {
+        game->fruit_x = 13;
+        game->fruit_y = 17;
+        set_tile(&game->map, game->fruit_x, game->fruit_y, TILE_FRUIT);
+        game->fruit_active = 1;
+        game->fruit_timer  = SDL_GetTicks();
+        game->fruit_spawn_count++;
+    }
+
+    // Disparition après 10s
+    if (game->fruit_active)
+    {
+        Uint32 now = SDL_GetTicks();
+        if (now - game->fruit_timer > FRUIT_DURATION)
+        {
+            set_tile(&game->map, game->fruit_x, game->fruit_y, TILE_EMPTY);
+            game->fruit_active = 0;
+        }
     }
 }
 
