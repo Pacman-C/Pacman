@@ -42,6 +42,16 @@
 /* ── Seuils ──────────────────────────────────── */
 #define CLYDE_THRESHOLD  8   // distance en tuiles
 #define PINKY_OFFSET     4   // cases devant Pac-Man
+
+/* ── Fruits ──────────────────────────────────── */
+#define TILE_FRUIT 'F'
+#define FRUIT_DURATION 10000    // 10 secondes
+#define FRUIT_SPAWN_1  70       // première apparition à 70 pastilles mangées
+#define FRUIT_SPAWN_2  170      // deuxième apparition
+
+// Dans base.h
+#define FRIGHTENED_DURATION_LVL(lvl) \
+    ((Uint32)((lvl) >= 17 ? 0 : (6000 - (lvl) * 300)))
  
 /* ── Directions ──────────────────────────────── */
 typedef enum {
@@ -137,6 +147,12 @@ typedef struct {
     int death_reset_done;
     int    scatter_chase_index;
     Uint32 scatter_chase_timer;
+
+    // Fruits
+    int    fruit_x, fruit_y;        
+    int    fruit_active;           
+    Uint32 fruit_timer;            
+    int    fruit_spawn_count;       
 } Game;
 
 

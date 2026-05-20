@@ -4,6 +4,7 @@
 #include "../include/base.h"
 
 #include <stdlib.h>
+#include <math.h>
 
 #define PEN_EXIT_X 14
 #define PEN_EXIT_Y 11
@@ -98,7 +99,6 @@ static void ghost_move(Ghost *g, Map *map, float delta)
     Entity *e = &g->entity;
     char tile = get_tile(map, e->x, e->y);
 
-    // ajuster la vitesse selon le type de tuile et le mode du fantome
     if (tile == TILE_TUNNEL)
     {
         e->speed = SPEED_GHOST_TUNNEL;
@@ -114,20 +114,23 @@ static void ghost_move(Ghost *g, Map *map, float delta)
     else
     {
         e->speed = SPEED_GHOST;
+
+        if (g->id == BLINKY && g->mode == GHOST_CHASE)
+        {
+            if (map->pellet_count <= 20)
+                e->speed = SPEED_GHOST * 1.2f;
+            if (map->pellet_count <= 10)
+                e->speed = SPEED_GHOST * 1.4f;
+        }
     }
+    
 
     float move = e->speed * TILE_SIZE * delta;
 
-    // calculer la nouvelle position en pixels
-    float new_px = e->px + DX[e->dir] * move;
-    float new_py = e->py + DY[e->dir] * move;
+    int check_x = (int)((e->px + DX[e->dir] * move) / TILE_SIZE);
+    int check_y = (int)((e->py + DY[e->dir] * move) / TILE_SIZE);
 
-    // calculer la nouvelle position en tuiles
-    int new_tx = (int)(new_px / TILE_SIZE);
-    int new_ty = (int)(new_py / TILE_SIZE);
-
-    // vérifier les collisions avec les murs
-    char next_tile = get_tile(map, new_tx, new_ty);
+    char next_tile = get_tile(map, check_x, check_y);
     if (next_tile == TILE_WALL || (next_tile == TILE_DOOR && g->mode != GHOST_DEAD))
     {
         e->px = e->x * TILE_SIZE;
@@ -135,34 +138,52 @@ static void ghost_move(Ghost *g, Map *map, float delta)
         return;
     }
 
-    // mettre à jour la position si pas de collision
-    e->px = new_px;
-    e->py = new_py;
-    e->x  = new_tx;
-    e->y  = new_ty;
+    e->px = e->px + DX[e->dir] * move;
+    e->py = e->py + DY[e->dir] * move;
+    e->x  = (int)(e->px / TILE_SIZE);
+    e->y  = (int)(e->py / TILE_SIZE);
 
-    if (tile == TILE_TUNNEL)
+    if (e->x <= 0 && e->dir == DIR_LEFT)
     {
-        if (e->x == 0)
-            e->x = MAP_COLS - 1;
-        else
-            e->x = 0;
+        e->x  = MAP_COLS - 1;
         e->px = e->x * TILE_SIZE;
+    }
+    else if (e->x >= MAP_COLS - 1 && e->dir == DIR_RIGHT)
+    {
+        e->x  = 0;
+        e->px = 0;
     }
 }
 
-static void ghost_leave_pen(Ghost *g)
+static void ghost_leave_pen(Ghost *g, float delta)
 {
-    // voir is le fantome est encore dans la maision
+    float target_px = PEN_EXIT_X * TILE_SIZE;
+    
+    // Marge de tolérance pour éviter la vibration
+    float tolerance = 0.5f;
+    
+    // Mouvement horizontal vers la sortie
+    if (fabsf(g->entity.px - target_px) > tolerance)
+    {
+        float move = g->entity.speed * TILE_SIZE * delta;
+        if (g->entity.px < target_px)
+            g->entity.px += move;
+        else
+            g->entity.px -= move;
+        g->entity.x = (int)(g->entity.px / TILE_SIZE);
+        return;
+    }
+
+    // Une fois aligné horizontalement, monte vers la sortie
     if (g->entity.y > PEN_EXIT_Y)
     {
-        // le faire monter progressivement pour une animation plus fluide
-        g->entity.py -= g->entity.speed * TILE_SIZE * 0.016f;
+        float move = g->entity.speed * TILE_SIZE * delta;
+        g->entity.py -= move;
         g->entity.y   = (int)(g->entity.py / TILE_SIZE);
     }
     else
     {
-        // il est sorti, on le place à la position de sortie et on change son mode pour qu'il puisse commencer à se déplacer
+        // Arrivé à la sortie!
         g->entity.y   = PEN_EXIT_Y;
         g->entity.py  = PEN_EXIT_Y * TILE_SIZE;
         g->mode       = GHOST_SCATTER;
@@ -172,13 +193,6 @@ static void ghost_leave_pen(Ghost *g)
 
 static void ghost_update_pen(Ghost *g, Map *map)
 {
-    Uint32 now = SDL_GetTicks();
-
-    if (g->mode_timer != 0 && now - g->mode_timer < 3000)
-    {
-        return;
-    }
-
     int eaten = map->total_pellets - map->pellet_count;
     if (eaten >= PEN_PELLET_TO_GO[g->id])
     {
@@ -188,14 +202,19 @@ static void ghost_update_pen(Ghost *g, Map *map)
 
 static void check_collision(Ghost *g, Player *p, Game *game)
 {
-    float dx = g->entity.px - p->entity.px;
-    float dy = g->entity.py - p->entity.py;
+    float ghost_cx = g->entity.px + TILE_SIZE / 2;
+    float ghost_cy = g->entity.py + TILE_SIZE / 2;
+
+    float pac_cx = p->entity.px;
+    float pac_cy = p->entity.py;
+
+    float dx = ghost_cx - pac_cx;
+    float dy = ghost_cy - pac_cy;
     float dist_sq = dx * dx + dy * dy;
 
-    if (dist_sq > 12.0f * 12.0f)
-    {
+    float seuil = (TILE_SIZE * 3 / 4);
+    if (dist_sq > seuil * seuil)
         return;
-    }
 
     if (g->mode == GHOST_FRIGHTENED)
     {
@@ -203,6 +222,7 @@ static void check_collision(Ghost *g, Player *p, Game *game)
         int pts = PTS_GHOST_BASE * (1 << (game->ghosts_eaten_combo - 1));
         p->score += pts;
         g->mode = GHOST_DEAD;
+        game->frightened_start = SDL_GetTicks();
     }
     else if (g->mode == GHOST_SCATTER || g->mode == GHOST_CHASE)
     {
@@ -250,7 +270,7 @@ void ghost_init(Ghost ghosts[GHOST_COUNT])
     ghosts[INKY].mode         = GHOST_PEN;
     ghosts[INKY].scatter_x    = 27;
     ghosts[INKY].scatter_y    = 30;
-    ghosts[INKY].mode_timer   = SDL_GetTicks();
+    ghosts[INKY].mode_timer   = 0;
     ghosts[INKY].is_alive     = 1;
 
     ghosts[CLYDE].entity.x     = 16;
@@ -263,8 +283,13 @@ void ghost_init(Ghost ghosts[GHOST_COUNT])
     ghosts[CLYDE].mode         = GHOST_PEN;
     ghosts[CLYDE].scatter_x    = 0;
     ghosts[CLYDE].scatter_y    = 30;
-    ghosts[CLYDE].mode_timer   = SDL_GetTicks();
+    ghosts[CLYDE].mode_timer   = 0;
     ghosts[CLYDE].is_alive     = 1;
+
+    ghosts[BLINKY].mode_before_fright = GHOST_SCATTER;
+    ghosts[PINKY].mode_before_fright  = GHOST_SCATTER;
+    ghosts[INKY].mode_before_fright   = GHOST_SCATTER;
+    ghosts[CLYDE].mode_before_fright  = GHOST_SCATTER;
 }
 
 static void ghost_compute_target(Ghost *g, Ghost ghosts[GHOST_COUNT], Player *p, int *tx, int *ty)
@@ -375,27 +400,40 @@ void ghost_update(Ghost ghosts[GHOST_COUNT], Map *map, Player *p, float delta, G
         }
         if (g->mode == GHOST_LEAVING)
         {
-            ghost_leave_pen(g);
+            ghost_leave_pen(g, delta);
             continue;
         }
 
-        int target_x, target_y;
-        ghost_compute_target(g, ghosts, p, &target_x, &target_y);
+        /* Ne choisir une direction qu'au centre d'une case */
+        int center_x = g->entity.x * TILE_SIZE;
+        int center_y = g->entity.y * TILE_SIZE;
+        float dist_to_center = (g->entity.px - center_x) * (g->entity.px - center_x)
+                             + (g->entity.py - center_y) * (g->entity.py - center_y);
 
-        Direction best = ghost_choose_dir(map, g, target_x, target_y);
-        if (best != DIR_NONE)
+        if (dist_to_center < 4.0f)
         {
-            g->entity.dir = best;
+            int target_x, target_y;
+            ghost_compute_target(g, ghosts, p, &target_x, &target_y);
+            g->target_x = target_x;
+            g->target_y = target_y;
+
+            Direction best = ghost_choose_dir(map, g, target_x, target_y);
+            if (best != DIR_NONE)
+                g->entity.dir = best;
         }
+
         ghost_move(g, map, delta);
 
-        if (g->mode == GHOST_DEAD && g->entity.x == PEN_EXIT_X && g->entity.y == PEN_EXIT_Y)
+        /* Retour au pen quand DEAD et arrivé à la sortie */
+        if (g->mode == GHOST_DEAD &&
+            g->entity.x == PEN_EXIT_X &&
+            g->entity.y == PEN_EXIT_Y)
         {
-            g->mode    = GHOST_PEN;
-            g->entity.x  = 14;
-            g->entity.y  = 14;
-            g->entity.px = 14 * TILE_SIZE;
-            g->entity.py = 14 * TILE_SIZE;
+            g->mode       = GHOST_PEN;
+            g->entity.x   = 14;
+            g->entity.y   = 14;
+            g->entity.px  = 14 * TILE_SIZE;
+            g->entity.py  = 14 * TILE_SIZE;
             g->mode_timer = SDL_GetTicks();
         }
 

@@ -103,6 +103,12 @@ void pacman_update(Player *p, Map *map, float delta)
         p->power_timer = SDL_GetTicks();
         map->pellet_count--;
     }
+
+    else if (tile == TILE_FRUIT)
+    {
+        set_tile(map, e->x, e->y, TILE_EMPTY);
+        p->score += PTS_CHERRY;
+    }
 }
 
 
