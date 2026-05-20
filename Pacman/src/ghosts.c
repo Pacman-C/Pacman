@@ -114,7 +114,16 @@ static void ghost_move(Ghost *g, Map *map, float delta)
     else
     {
         e->speed = SPEED_GHOST;
+
+        if (g->id == BLINKY && g->mode == GHOST_CHASE)
+        {
+            if (map->pellet_count <= 20)
+                e->speed = SPEED_GHOST * 1.2f;
+            if (map->pellet_count <= 10)
+                e->speed = SPEED_GHOST * 1.4f;
+        }
     }
+    
 
     float move = e->speed * TILE_SIZE * delta;
 
