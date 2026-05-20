@@ -4,6 +4,7 @@
 #include "../include/base.h"
 
 #include <stdlib.h>
+#include <math.h>
 
 #define PEN_EXIT_X 14
 #define PEN_EXIT_Y 11
@@ -145,26 +146,35 @@ static void ghost_move(Ghost *g, Map *map, float delta)
     }
 }
 
-static void ghost_leave_pen(Ghost *g)
+static void ghost_leave_pen(Ghost *g, float delta)
 {
     float target_px = PEN_EXIT_X * TILE_SIZE;
-    if ((int)g->entity.px != (int)target_px)
+    
+    // Marge de tolérance pour éviter la vibration
+    float tolerance = 0.5f;
+    
+    // Mouvement horizontal vers la sortie
+    if (fabsf(g->entity.px - target_px) > tolerance)
     {
+        float move = g->entity.speed * TILE_SIZE * delta;
         if (g->entity.px < target_px)
-            g->entity.px += g->entity.speed * TILE_SIZE * 0.016f;
+            g->entity.px += move;
         else
-            g->entity.px -= g->entity.speed * TILE_SIZE * 0.016f;
+            g->entity.px -= move;
         g->entity.x = (int)(g->entity.px / TILE_SIZE);
         return;
     }
 
+    // Une fois aligné horizontalement, monte vers la sortie
     if (g->entity.y > PEN_EXIT_Y)
     {
-        g->entity.py -= g->entity.speed * TILE_SIZE * 0.016f;
+        float move = g->entity.speed * TILE_SIZE * delta;
+        g->entity.py -= move;
         g->entity.y   = (int)(g->entity.py / TILE_SIZE);
     }
     else
     {
+        // Arrivé à la sortie!
         g->entity.y   = PEN_EXIT_Y;
         g->entity.py  = PEN_EXIT_Y * TILE_SIZE;
         g->mode       = GHOST_SCATTER;
@@ -381,7 +391,7 @@ void ghost_update(Ghost ghosts[GHOST_COUNT], Map *map, Player *p, float delta, G
         }
         if (g->mode == GHOST_LEAVING)
         {
-            ghost_leave_pen(g);
+            ghost_leave_pen(g, delta);
             continue;
         }
 
