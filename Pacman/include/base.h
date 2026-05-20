@@ -49,8 +49,9 @@
 #define FRUIT_SPAWN_1  70       // première apparition à 70 pastilles mangées
 #define FRUIT_SPAWN_2  170      // deuxième apparition
 
+// Dans base.h
 #define FRIGHTENED_DURATION_LVL(lvl) \
-    ((lvl) >= 17 ? 0 : (6000 - (lvl) * 300))
+    ((Uint32)((lvl) >= 17 ? 0 : (6000 - (lvl) * 300)))
  
 /* ── Directions ──────────────────────────────── */
 typedef enum {
