@@ -24,7 +24,14 @@
 #define PTS_PELLET       50
 #define PTS_POWER_PELLET 500
 #define PTS_GHOST_BASE   200    // x2 à chaque fantôme consécutif
-#define PTS_CHERRY       100    // cerise niveau 1
+#define PTS_CHERRY       100
+#define PTS_STRAWBERRY   300
+#define PTS_ORANGE       500
+#define PTS_APPLE        700
+#define PTS_MELON        1000
+#define PTS_GALAXIAN     2000
+#define PTS_BELL         3000
+#define PTS_KEY          5000
 #define EXTRA_LIFE_SCORE 10000
  
 /* ── Vitesses (tuiles/seconde) ───────────────── */

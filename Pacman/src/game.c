@@ -85,7 +85,7 @@ void game_update(Game *game, float delta) {
         return;
     }
 
-    pacman_update(&game->player, &game->map, delta);
+    pacman_update(&game->player, &game->map, delta, game);
     ghost_update(game->ghosts, &game->map, &game->player, delta, game);
 
     if (game->map.pellet_count == 0)
@@ -97,6 +97,8 @@ void game_update(Game *game, float delta) {
         game->player.entity.px = 14 * TILE_SIZE + TILE_SIZE / 2;
         game->player.entity.py = 23 * TILE_SIZE + TILE_SIZE / 2;
         ghost_init(game->ghosts);
+        game->fruit_spawn_count = 0;
+        game->fruit_active = 0;
     }
 
     if (game->player.is_powered)

@@ -173,18 +173,20 @@ void render_frame(const Game *game)
         SDL_Rect dst = {c * TILE_SIZE, r * TILE_SIZE, TILE_SIZE, TILE_SIZE};
 
         SDL_Rect src;
-        src.y = 3 * TILE_SIZE;
+        src.y = 0;  // les fruits sont sur la ligne 0, à droite des fantômes
+        src.w = TILE_SIZE;
+        src.h = TILE_SIZE;
 
         switch (game->fruit_type)
         {
-            case FRUIT_CHERRY: src.x = 0; break;
-            case FRUIT_STRAWBERRY: src.x = TILE_SIZE; break;
-            case FRUIT_ORANGE: src.x = 2 * TILE_SIZE; break;
-            case FRUIT_APPLE: src.x = 3 * TILE_SIZE; break;
-            case FRUIT_MELON: src.x = 4 * TILE_SIZE; break;
-            case FRUIT_GALAXIAN: src.x = 5 * TILE_SIZE; break;
-            case FRUIT_BELL: src.x = 6 * TILE_SIZE; break;
-            case FRUIT_KEY: src.x = 7 * TILE_SIZE; break;
+            case FRUIT_CHERRY:     src.x = 4 * TILE_SIZE; break; // x=64
+            case FRUIT_STRAWBERRY: src.x = 5 * TILE_SIZE; break; // x=80
+            case FRUIT_ORANGE:     src.x = 6 * TILE_SIZE; break; // x=96
+            case FRUIT_APPLE:      src.x = 7 * TILE_SIZE; break; // x=112
+            case FRUIT_MELON:      src.x = 8 * TILE_SIZE; break; // x=128
+            case FRUIT_GALAXIAN:   src.x = 9 * TILE_SIZE; break; // x=144
+            case FRUIT_BELL:       src.x = 10 * TILE_SIZE; break;// x=160
+            case FRUIT_KEY:        src.x = 11 * TILE_SIZE; break;// x=176
         }
 
         SDL_RenderCopy(g_ren, g_sprite, &src, &dst);
