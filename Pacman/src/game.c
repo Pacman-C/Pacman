@@ -14,9 +14,14 @@ void game_init(Game *game) {
     game->state = STATE_READY;
     game->level = 1;
     game->ghosts_eaten_combo = 0;
+    game->ghost_score_visible = 0;
+    game->ghost_score_value = 0;
     game->frightened_start = 0;
     game->last_tick = SDL_GetTicks();
     game->high_score = 0;
+    game->fruit_spawn_count = 0;
+    game->fruit_active = 0;
+    game->fruit_type = FRUIT_CHERRY;
 
     game->player.entity.x = 14; // Position de départ
     game->player.entity.y = 23;
@@ -33,8 +38,28 @@ void game_init(Game *game) {
     
 }
 
+static FruitType fruit_for_level(int level)
+{
+    if (level == 1) return FRUIT_CHERRY;
+    if (level == 2) return FRUIT_STRAWBERRY;
+    if (level <= 4) return FRUIT_ORANGE;
+    if (level <= 6) return FRUIT_APPLE;
+    if (level <= 8) return FRUIT_MELON;
+    if (level <= 10) return FRUIT_GALAXIAN;
+    if (level <= 12) return FRUIT_BELL;
+    return FRUIT_KEY;
+}
+
 void game_update(Game *game, float delta) {
 
+    if (game->ghost_score_visible)
+    {
+        if (SDL_GetTicks() - game->ghost_score_timer > 1000)
+        {
+            game->ghost_score_visible = 0;
+        }
+    }
+    
     if (game->state == STATE_PACMAN_DEAD && !game->death_reset_done)
     {
         game->player.lives--;
@@ -119,8 +144,9 @@ void game_update(Game *game, float delta) {
     {
         game->fruit_x = 13;
         game->fruit_y = 17;
-        set_tile(&game->map, game->fruit_x, game->fruit_y, TILE_FRUIT);
+        game->fruit_type = fruit_for_level(game->level);
         game->fruit_active = 1;
+        set_tile(&game->map, 13, 17, TILE_FRUIT);
         game->fruit_timer  = SDL_GetTicks();
         game->fruit_spawn_count++;
     }
@@ -128,8 +154,9 @@ void game_update(Game *game, float delta) {
     {
         game->fruit_x = 13;
         game->fruit_y = 17;
-        set_tile(&game->map, game->fruit_x, game->fruit_y, TILE_FRUIT);
+        game->fruit_type = fruit_for_level(game->level);
         game->fruit_active = 1;
+        set_tile(&game->map, 13, 17, TILE_FRUIT);
         game->fruit_timer  = SDL_GetTicks();
         game->fruit_spawn_count++;
     }
