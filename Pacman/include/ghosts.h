@@ -1,7 +1,7 @@
 #ifndef GHOSTS_H
 #define GHOSTS_H
 
-#include "../include/base.h"
+#include "base.h"
 
 #define PEN_EXIT_X 14
 #define PEN_EXIT_Y 11

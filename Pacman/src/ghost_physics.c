@@ -35,7 +35,7 @@ void ghost_move(Ghost *g, Map *map, float delta, int level)
     int cy = (int)((e->py + DY[e->dir] * move) / TILE_SIZE);
     char next = get_tile(map, cx, cy);
 
-    if (next == TILE_WALL || (next == TILE_DOOR && g->mode != GHOST_DEAD)) {
+    if (next == TILE_WALL || (next == TILE_DOOR && g->mode != GHOST_DEAD && g->mode != GHOST_LEAVING)) {
         e->px = e->x * TILE_SIZE;
         e->py = e->y * TILE_SIZE;
         return;
@@ -80,14 +80,15 @@ void ghost_return_to_pen(Ghost *g)
     g->entity.y  = 14;
     g->entity.px = 14 * TILE_SIZE;
     g->entity.py = 14 * TILE_SIZE;
-    g->mode      = GHOST_LEAVING;
+    g->mode      = GHOST_PEN; 
+    g->mode_timer = SDL_GetTicks(); 
 }
 
 void ghost_check_collision(Ghost *g, Player *p, Game *game)
 {
     float dx = (g->entity.px + TILE_SIZE / 2) - p->entity.px;
     float dy = (g->entity.py + TILE_SIZE / 2) - p->entity.py;
-    float seuil = TILE_SIZE * 3 / 4;
+    float seuil = TILE_SIZE; 
     if (dx * dx + dy * dy > seuil * seuil) return;
 
     if (g->mode == GHOST_FRIGHTENED) {
@@ -103,6 +104,7 @@ void ghost_check_collision(Ghost *g, Player *p, Game *game)
     } else if (g->mode == GHOST_SCATTER || g->mode == GHOST_CHASE) {
         game->state            = STATE_PACMAN_DEAD;
         game->death_reset_done = 0;
+        game->death_start      = SDL_GetTicks();
     }
 }
 
@@ -141,10 +143,11 @@ void ghost_update(Ghost ghosts[GHOST_COUNT], Map *map, Player *p, float delta, G
     for (int i = 0; i < GHOST_COUNT; i++) {
         Ghost *g = &ghosts[i];
 
-        if (g->mode == GHOST_PEN) continue;
+        if (g->mode == GHOST_PEN) continue;  
         
         if (g->mode == GHOST_LEAVING) {
             ghost_leave_pen(g, delta, game->level);
+            ghost_check_collision(g, p, game);
             continue;
         }
 

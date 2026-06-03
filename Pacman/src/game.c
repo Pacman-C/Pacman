@@ -28,12 +28,13 @@ void game_init(Game *game) {
     game->player.entity.px = 14 * TILE_SIZE + TILE_SIZE / 2;
     game->player.entity.py = 23 * TILE_SIZE + TILE_SIZE / 2;
     game->player.entity.dir = DIR_LEFT;
-    game->player.entity.next_dir = DIR_LEFT;
+    game->player.entity.next_dir = DIR_NONE;
     game->player.entity.speed = SPEED_PACMAN; // Vitesse de déplacement en pixels par seconde
     game->death_reset_done = 0;
     game->player.is_powered = 0;
     game->player.power_timer = 0;
     game->extra_life_earned = 0;
+    game->death_start = 0;
     ghost_init(game->ghosts);
 
     game->scatter_chase_index = 0;
@@ -94,7 +95,7 @@ static void game_update_frightened(Game *game)
         for (int i = 0; i < GHOST_COUNT; i++)
         {
             Ghost *g = &game->ghosts[i];
-            if (g->mode == GHOST_SCATTER || g->mode == GHOST_CHASE || g->mode == GHOST_LEAVING || g->mode == GHOST_PEN)
+            if (g->mode == GHOST_SCATTER || g->mode == GHOST_CHASE || g->mode == GHOST_PEN)
             {
                 g->mode_before_fright = g->mode;
                 g->mode = GHOST_FRIGHTENED;

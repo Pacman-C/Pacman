@@ -166,11 +166,13 @@ void render_frame(const Game *game)
                     SDL_RenderFillRect(g_ren, &p);
                 }
             }
-            if (game->fruit_active &&
-    r == game->fruit_y &&
-    c == game->fruit_x)
+        }
+    }
+
+    /* ── Render fruit hors de la boucle (optimisation) ── */
+    if (game->fruit_active)
     {
-        SDL_Rect dst = {c * TILE_SIZE, r * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+        SDL_Rect dst = {game->fruit_x * TILE_SIZE, game->fruit_y * TILE_SIZE, TILE_SIZE, TILE_SIZE};
 
         SDL_Rect src;
         src.y = 0;  // les fruits sont sur la ligne 0, à droite des fantômes
@@ -190,9 +192,6 @@ void render_frame(const Game *game)
         }
 
         SDL_RenderCopy(g_ren, g_sprite, &src, &dst);
-    }
-                 
-        }
     }
 
     if (g_debug) {
@@ -217,7 +216,7 @@ SDL_SetRenderDrawColor(g_ren, 255, 255, 0, 255);
 
 if (game->state == STATE_PACMAN_DEAD) {
     /* Bouche qui s'ouvre progressivement jusqu'à disparaître */
-    Uint32 elapsed = SDL_GetTicks() - game->frightened_start;
+    Uint32 elapsed = SDL_GetTicks() - game->death_start;
     int angle = (elapsed * 90) / 800;  /* 0 à 90 degrés en 800ms */
     if (angle > 90) angle = 90;
 
@@ -294,7 +293,8 @@ if (game->state == STATE_PACMAN_DEAD) {
             if      (g->entity.dir == DIR_LEFT)  src.x = 0;
             else if (g->entity.dir == DIR_RIGHT) src.x = TILE_SIZE;
             else if (g->entity.dir == DIR_UP)    src.x = 2 * TILE_SIZE;
-            else                                 src.x = 3 * TILE_SIZE;
+            else if (g->entity.dir == DIR_DOWN)  src.x = 3 * TILE_SIZE;
+            else                                 src.x = 0;  // default si DIR_NONE
         }
 
         SDL_RenderCopy(g_ren, g_sprite, &src, &dst);

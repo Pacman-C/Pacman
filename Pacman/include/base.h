@@ -58,7 +58,7 @@
 
 // Dans base.h
 #define FRIGHTENED_DURATION_LVL(lvl) \
-    ((Uint32)((lvl) >= 17 ? 0 : (6000 - (lvl) * 300)))
+    ((Uint32)((lvl) >= 17 ? 1000 : (6000 - (lvl) * 300)))
  
 /* ── Directions ──────────────────────────────── */
 typedef enum {
@@ -163,6 +163,7 @@ typedef struct {
     int       high_score;
     int       ghosts_eaten_combo;   // nb fantômes mangés ce frightened (pour x2)
     Uint32    frightened_start;     // SDL_GetTicks() quand frightened a commencé
+    Uint32    death_start;          // SDL_GetTicks() quand mort a commencé (animation)
 
     Uint32    last_tick;
     int death_reset_done;

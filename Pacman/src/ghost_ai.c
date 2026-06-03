@@ -109,6 +109,7 @@ static void update_scatter_chase(Game *game)
     for (int i = 0; i < GHOST_COUNT; i++) {
         Ghost *g = &game->ghosts[i];
         if (g->mode == GHOST_SCATTER || g->mode == GHOST_CHASE) {
+            g->mode_before_fright = g->mode;  // ← Sauvegarder mode avant changement
             g->mode       = new_mode;
             g->entity.dir = opposite(g->entity.dir);
         }
@@ -125,8 +126,14 @@ void ghost_update_modes(Ghost ghosts[GHOST_COUNT], Map *map, Game *game)
         if (g->mode == GHOST_PEN) {
             static const int PEN_PELLET_TO_GO[] = { 0, 0, 30, 60 };
             int eaten = map->total_pellets - map->pellet_count;
-            if (eaten >= PEN_PELLET_TO_GO[g->id])
+            
+            /* Délai de 1000ms après mort SEULEMENT si mode_timer > 0 */
+            int should_wait_delay = (g->mode_timer > 0);
+            Uint32 time_in_pen = should_wait_delay ? (SDL_GetTicks() - g->mode_timer) : 0;
+            
+            if (eaten >= PEN_PELLET_TO_GO[g->id] && (!should_wait_delay || time_in_pen >= 1000)) {
                 g->mode = GHOST_LEAVING;
+            }
         }
     }
 }
