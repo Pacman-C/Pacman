@@ -108,7 +108,6 @@ void pacman_update(Player *p, Map *map, float delta, Game *game)
     {
         set_tile(map, e->x, e->y, TILE_EMPTY);
         game->fruit_active = 0;
-
         int pts = 0;
         switch (game->fruit_type) {
             case FRUIT_CHERRY:     pts = PTS_CHERRY;     break;
@@ -121,6 +120,13 @@ void pacman_update(Player *p, Map *map, float delta, Game *game)
             case FRUIT_KEY:        pts = PTS_KEY;         break;
         }
         p->score += pts;
+
+        // Afficher le score à l'endroit du fruit
+        game->ghost_score_visible = 1;
+        game->ghost_score_value   = pts;
+        game->ghost_score_x       = e->x;
+        game->ghost_score_y       = e->y;
+        game->ghost_score_timer   = SDL_GetTicks();
     }
 }
 

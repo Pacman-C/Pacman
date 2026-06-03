@@ -70,7 +70,8 @@ void game_update(Game *game, float delta) {
         }
 
         ghost_init(game->ghosts);
-
+        game->fruit_active = 0;
+        
         game->player.entity.x = 14;
         game->player.entity.y = 23;
         game->player.entity.px = 14 * TILE_SIZE + TILE_SIZE / 2;
