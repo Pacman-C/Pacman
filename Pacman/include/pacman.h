@@ -3,7 +3,7 @@
 
 #include "base.h"
 
-void pacman_update(Player *p, Map *map, float delta);
+void pacman_update(Player *p, Map *map, float delta, Game *game);
 void pacman_set_dir(Player *p, Direction dir);
 
 #endif

@@ -15,7 +15,7 @@ static int can_move(Map *map, int x, int y, Direction dir)
     return 1;
 }
 
-void pacman_update(Player *p, Map *map, float delta)
+void pacman_update(Player *p, Map *map, float delta, Game *game)
 {
     Entity *e = &p->entity;
 
@@ -107,7 +107,26 @@ void pacman_update(Player *p, Map *map, float delta)
     else if (tile == TILE_FRUIT)
     {
         set_tile(map, e->x, e->y, TILE_EMPTY);
-        p->score += PTS_CHERRY;
+        game->fruit_active = 0;
+        int pts = 0;
+        switch (game->fruit_type) {
+            case FRUIT_CHERRY:     pts = PTS_CHERRY;     break;
+            case FRUIT_STRAWBERRY: pts = PTS_STRAWBERRY;  break;
+            case FRUIT_ORANGE:     pts = PTS_ORANGE;      break;
+            case FRUIT_APPLE:      pts = PTS_APPLE;       break;
+            case FRUIT_MELON:      pts = PTS_MELON;       break;
+            case FRUIT_GALAXIAN:   pts = PTS_GALAXIAN;    break;
+            case FRUIT_BELL:       pts = PTS_BELL;        break;
+            case FRUIT_KEY:        pts = PTS_KEY;         break;
+        }
+        p->score += pts;
+
+        // Afficher le score à l'endroit du fruit
+        game->ghost_score_visible = 1;
+        game->ghost_score_value   = pts;
+        game->ghost_score_x       = e->x;
+        game->ghost_score_y       = e->y;
+        game->ghost_score_timer   = SDL_GetTicks();
     }
 }
 

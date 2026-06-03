@@ -219,10 +219,20 @@ static void check_collision(Ghost *g, Player *p, Game *game)
     if (g->mode == GHOST_FRIGHTENED)
     {
         game->ghosts_eaten_combo++;
+
         int pts = PTS_GHOST_BASE * (1 << (game->ghosts_eaten_combo - 1));
+
         p->score += pts;
+
+        game->ghost_score_visible = 1;
+        game->ghost_score_value = pts;
+
+        game->ghost_score_x = g->entity.x;
+        game->ghost_score_y = g->entity.y;
+
+        game->ghost_score_timer = SDL_GetTicks();
+
         g->mode = GHOST_DEAD;
-        game->frightened_start = SDL_GetTicks();
     }
     else if (g->mode == GHOST_SCATTER || g->mode == GHOST_CHASE)
     {
