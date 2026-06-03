@@ -15,31 +15,32 @@ static int can_move(Map *map, int x, int y, Direction dir)
     return 1;
 }
 
-void pacman_update(Player *p, Map *map, float delta, Game *game)
+static void pacman_update_tile_pos(Entity *e)
 {
-    Entity *e = &p->entity;
-
-    /* Tuile actuelle depuis le centre */
     e->x = (int)((e->px - TILE_SIZE / 2) / TILE_SIZE);
     e->y = (int)((e->py - TILE_SIZE / 2) / TILE_SIZE);
+}
 
-    /* Changement de direction si possible */
-    if (e->next_dir != DIR_NONE)
+static void pacman_try_turn(Entity *e, Map *map)
 {
-    /* Vérifie que Pac-Man est assez centré sur sa case */
+    if (e->next_dir == DIR_NONE)
+        return;
+
     float center_px = e->x * TILE_SIZE + TILE_SIZE / 2;
     float center_py = e->y * TILE_SIZE + TILE_SIZE / 2;
     float dist_x = e->px - center_px;
     float dist_y = e->py - center_py;
-    int centered = (dist_x * dist_x + dist_y * dist_y) < 16.0f;
 
-    if (centered && can_move(map, e->x, e->y, e->next_dir))
+    if ((dist_x * dist_x + dist_y * dist_y) < 16.0f
+        && can_move(map, e->x, e->y, e->next_dir))
     {
         e->dir = e->next_dir;
         e->next_dir = DIR_NONE;
     }
 }
 
+static void pacman_move(Entity *e, Map *map, float delta)
+{
     if (e->dir == DIR_NONE)
         return;
 
@@ -54,63 +55,61 @@ void pacman_update(Player *p, Map *map, float delta, Game *game)
     e->px += DX[e->dir] * move;
     e->py += DY[e->dir] * move;
 
-    /* Force centrage sur l'axe perpendiculaire */
     if (e->dir == DIR_LEFT || e->dir == DIR_RIGHT)
         e->py = e->y * TILE_SIZE + TILE_SIZE / 2;
-    if (e->dir == DIR_UP || e->dir == DIR_DOWN)
-        e->px = e->x * TILE_SIZE + TILE_SIZE / 2;
-
-    /* Recalcule la tuile après déplacement */
-    e->x = (int)((e->px - TILE_SIZE / 2) / TILE_SIZE);
-    e->y = (int)((e->py - TILE_SIZE / 2) / TILE_SIZE);
-
-    /* Tunnel */
-    char tile = get_tile(map, e->x, e->y);
-    if (tile == TILE_TUNNEL)
-    {
-        if (e->dir == DIR_LEFT)
-        {
-            e->x  = MAP_COLS - 2;
-            e->px = e->x * TILE_SIZE + TILE_SIZE / 2;
-        }
-        else if (e->dir == DIR_RIGHT)
-        {
-            e->x  = 1;
-            e->px = e->x * TILE_SIZE + TILE_SIZE / 2;
-        }
-        e->py = e->y * TILE_SIZE + TILE_SIZE / 2;
-        tile = get_tile(map, e->x, e->y);
-    }
-
-    /* Vitesse */
-    if (tile == TILE_PELLET || tile == TILE_POWER_PELLET)
-        e->speed = SPEED_PACMAN_EATING;
     else
-        e->speed = SPEED_PACMAN;
+        e->px = e->x * TILE_SIZE + TILE_SIZE / 2;
+}
 
-    /* Manger */
+
+static void pacman_handle_tunnel(Entity *e, Map *map)
+{
+    if (get_tile(map, e->x, e->y) != TILE_TUNNEL)
+        return;
+
+    if (e->dir == DIR_LEFT)
+    {
+        e->x  = MAP_COLS - 2;
+        e->px = e->x * TILE_SIZE + TILE_SIZE / 2;
+    }
+    else if (e->dir == DIR_RIGHT)
+    {
+        e->x  = 1;
+        e->px = e->x * TILE_SIZE + TILE_SIZE / 2;
+    }
+    e->py = e->y * TILE_SIZE + TILE_SIZE / 2;
+}
+
+static void pacman_collect_tile(Player *p, Map *map, Game *game)
+{
+    Entity *e = &p->entity;
+    char tile = get_tile(map, e->x, e->y);
+    int ate_pellet = 0;
+
     if (tile == TILE_PELLET)
     {
         set_tile(map, e->x, e->y, TILE_EMPTY);
         map->pellet_count--;
         p->score += PTS_DOT;
+        ate_pellet = 1;
     }
     else if (tile == TILE_POWER_PELLET)
     {
-        p->score += PTS_POWER_PELLET;
         set_tile(map, e->x, e->y, TILE_EMPTY);
+        map->pellet_count--;
+        p->score += PTS_POWER_PELLET;
         p->is_powered = 1;
         p->power_timer = SDL_GetTicks();
-        map->pellet_count--;
+        ate_pellet = 1;
     }
-
-    else if (tile == TILE_FRUIT)
+    else if (tile == TILE_FRUIT && game->fruit_active)
     {
         set_tile(map, e->x, e->y, TILE_EMPTY);
         game->fruit_active = 0;
+
         int pts = 0;
         switch (game->fruit_type) {
-            case FRUIT_CHERRY:     pts = PTS_CHERRY;     break;
+            case FRUIT_CHERRY:     pts = PTS_CHERRY;      break;
             case FRUIT_STRAWBERRY: pts = PTS_STRAWBERRY;  break;
             case FRUIT_ORANGE:     pts = PTS_ORANGE;      break;
             case FRUIT_APPLE:      pts = PTS_APPLE;       break;
@@ -121,13 +120,31 @@ void pacman_update(Player *p, Map *map, float delta, Game *game)
         }
         p->score += pts;
 
-        // Afficher le score à l'endroit du fruit
         game->ghost_score_visible = 1;
         game->ghost_score_value   = pts;
         game->ghost_score_x       = e->x;
         game->ghost_score_y       = e->y;
         game->ghost_score_timer   = SDL_GetTicks();
     }
+
+    if (ate_pellet) {
+        e->speed = SPEED_PACMAN_EATING + (game->level - 1) * 0.1f;
+    } else {
+        e->speed = SPEED_PACMAN + (game->level - 1) * 0.1f;
+    }
+}
+
+
+void pacman_update(Player *p, Map *map, float delta, Game *game)
+{
+    Entity *e = &p->entity;
+
+    pacman_update_tile_pos(e);
+    pacman_try_turn(e, map);
+    pacman_move(e, map, delta);
+    pacman_update_tile_pos(e);     
+    pacman_handle_tunnel(e, map);
+    pacman_collect_tile(p, map, game);
 }
 
 

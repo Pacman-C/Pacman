@@ -182,6 +182,7 @@ typedef struct {
     int ghost_score_y;
 
     Uint32 ghost_score_timer;
+    int extra_life_earned;
 } Game;
 
 
