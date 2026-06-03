@@ -105,13 +105,7 @@ static void ghost_move(Ghost *g, Map *map, float delta, int level)
 static void ghost_leave_pen(Ghost *g, float delta)
 {
     float target_px = PEN_EXIT_X * TILE_SIZE;
-    g->entity.speed = apply_level_speed(SPEED_GHOST, level);
     float move = g->entity.speed * TILE_SIZE * delta;
-
-    if (g->mode == GHOST_LEAVING) {
-        ghost_leave_pen(g, delta, game->level);  
-        continue;
-    }
 
     if (fabsf(g->entity.px - target_px) > 0.5f) {
         g->entity.px += (g->entity.px < target_px) ? move : -move;
