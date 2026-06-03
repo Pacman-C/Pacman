@@ -166,6 +166,32 @@ void render_frame(const Game *game)
                     SDL_RenderFillRect(g_ren, &p);
                 }
             }
+            if (game->fruit_active &&
+    r == game->fruit_y &&
+    c == game->fruit_x)
+    {
+        SDL_Rect dst = {c * TILE_SIZE, r * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+
+        SDL_Rect src;
+        src.y = 0;  // les fruits sont sur la ligne 0, à droite des fantômes
+        src.w = TILE_SIZE;
+        src.h = TILE_SIZE;
+
+        switch (game->fruit_type)
+        {
+            case FRUIT_CHERRY:     src.x = 4 * TILE_SIZE; break; // x=64
+            case FRUIT_STRAWBERRY: src.x = 5 * TILE_SIZE; break; // x=80
+            case FRUIT_ORANGE:     src.x = 6 * TILE_SIZE; break; // x=96
+            case FRUIT_APPLE:      src.x = 7 * TILE_SIZE; break; // x=112
+            case FRUIT_MELON:      src.x = 8 * TILE_SIZE; break; // x=128
+            case FRUIT_GALAXIAN:   src.x = 9 * TILE_SIZE; break; // x=144
+            case FRUIT_BELL:       src.x = 10 * TILE_SIZE; break;// x=160
+            case FRUIT_KEY:        src.x = 11 * TILE_SIZE; break;// x=176
+        }
+
+        SDL_RenderCopy(g_ren, g_sprite, &src, &dst);
+    }
+                 
         }
     }
 
@@ -247,17 +273,20 @@ if (game->state == STATE_PACMAN_DEAD) {
         }
         else if (g->mode == GHOST_FRIGHTENED)
         {
-           
+            Uint32 elapsed = t - game->frightened_start;
+            Uint32 duration = FRIGHTENED_DURATION_LVL(game->level);
+
+            Uint32 remaining = (elapsed < duration) ? (duration - elapsed) : 0;
+
             int blink = 0;
-            if (game->frightened_start > 0) {
-                Uint32 elapsed   = t - game->frightened_start;
-                Uint32 remaining = (elapsed < FRIGHTENED_DURATION)
-                                ? FRIGHTENED_DURATION - elapsed : 0;
-                if (remaining < FRIGHTENED_FLASH)
-                    blink = (t / 250) % 2;
+
+            if (remaining <= FRIGHTENED_FLASH)
+            {
+                blink = (t / 250) % 2;
             }
-            src.y = TILE_SIZE;
-            src.x = blink ? TILE_SIZE : 0;
+
+            src.y = TILE_SIZE;              
+            src.x = blink ? TILE_SIZE : 0;  
         }
         else if (g->mode == GHOST_DEAD)
         {
@@ -324,6 +353,26 @@ if (game->state == STATE_PACMAN_DEAD) {
     SDL_Color yellow = {255, 255, 0, 255};
     draw_string(WINDOW_W / 2 - 20, WINDOW_H - 12, score_buf, yellow);
 
+    if (game->ghost_score_visible)
+    {
+        char buf[8];
+
+        SDL_snprintf(
+            buf,
+            sizeof(buf),
+            "%d",
+            game->ghost_score_value
+        );
+
+        SDL_Color white = {255,255,255,255};
+
+        draw_string(
+            game->ghost_score_x * TILE_SIZE,
+            game->ghost_score_y * TILE_SIZE,
+            buf,
+            white
+        );
+    }
     SDL_RenderPresent(g_ren);
 }
 

@@ -24,7 +24,14 @@
 #define PTS_PELLET       50
 #define PTS_POWER_PELLET 500
 #define PTS_GHOST_BASE   200    // x2 à chaque fantôme consécutif
-#define PTS_CHERRY       100    // cerise niveau 1
+#define PTS_CHERRY       100
+#define PTS_STRAWBERRY   300
+#define PTS_ORANGE       500
+#define PTS_APPLE        700
+#define PTS_MELON        1000
+#define PTS_GALAXIAN     2000
+#define PTS_BELL         3000
+#define PTS_KEY          5000
 #define EXTRA_LIFE_SCORE 10000
  
 /* ── Vitesses (tuiles/seconde) ───────────────── */
@@ -132,6 +139,17 @@ typedef struct {
     Uint32  power_timer;
     int     is_powered;
 } Player;
+
+typedef enum {
+    FRUIT_CHERRY,
+    FRUIT_STRAWBERRY,
+    FRUIT_ORANGE,
+    FRUIT_APPLE,
+    FRUIT_MELON,
+    FRUIT_GALAXIAN,
+    FRUIT_BELL,
+    FRUIT_KEY
+} FruitType;
  
 /* ── État global du jeu ──────────────────────── */
 typedef struct {
@@ -139,10 +157,13 @@ typedef struct {
     Player    player;
     Ghost     ghosts[GHOST_COUNT];
     GameState state;
+    FruitType fruit_type;
+
     int       level;
     int       high_score;
     int       ghosts_eaten_combo;   // nb fantômes mangés ce frightened (pour x2)
     Uint32    frightened_start;     // SDL_GetTicks() quand frightened a commencé
+
     Uint32    last_tick;
     int death_reset_done;
     int    scatter_chase_index;
@@ -152,9 +173,16 @@ typedef struct {
     int    fruit_x, fruit_y;        
     int    fruit_active;           
     Uint32 fruit_timer;            
-    int    fruit_spawn_count;       
-} Game;
+    int    fruit_spawn_count;   
+    
+    int ghost_score_visible;
+    int ghost_score_value;
 
+    int ghost_score_x;
+    int ghost_score_y;
+
+    Uint32 ghost_score_timer;
+} Game;
 
 
 /* ── Macros utilitaires ──────────────────────── */
