@@ -69,7 +69,7 @@ void ghost_leave_pen(Ghost *g, float delta, int level)
     } else {
         g->entity.y   = PEN_EXIT_Y;
         g->entity.py  = PEN_EXIT_Y * TILE_SIZE;
-        g->mode       = g->mode_before_fright; 
+        g->mode       = GHOST_SCATTER;  
         g->entity.dir = DIR_LEFT;
     }
 }
@@ -80,7 +80,7 @@ void ghost_return_to_pen(Ghost *g)
     g->entity.y  = 14;
     g->entity.px = 14 * TILE_SIZE;
     g->entity.py = 14 * TILE_SIZE;
-    g->mode      = GHOST_PEN; 
+    g->mode      = GHOST_LEAVING; 
     g->mode_timer = SDL_GetTicks(); 
 }
 
@@ -157,9 +157,9 @@ void ghost_update(Ghost ghosts[GHOST_COUNT], Map *map, Player *p, float delta, G
             ghost_choose_next_move(g, ghosts, map, p);
         }
 
-        ghost_check_collision(g, p, game);  // ← AVANT move
+        ghost_check_collision(g, p, game); 
         ghost_move(g, map, delta, game->level);
-        ghost_check_collision(g, p, game);  // ← APRÈS move
+        ghost_check_collision(g, p, game);  
 
         if (g->mode == GHOST_DEAD &&
             g->entity.x == PEN_EXIT_X && g->entity.y == PEN_EXIT_Y)

@@ -38,8 +38,7 @@ static Direction ghost_choose_dir(Map *map, Ghost *g, int tx, int ty)
     return best;
 }
 
-static void ghost_compute_target(Ghost *g, Ghost ghosts[GHOST_COUNT],
-                                  Player *p, int *tx, int *ty)
+static void ghost_compute_target(Ghost *g, Ghost ghosts[GHOST_COUNT], Player *p, int *tx, int *ty)
 {
     switch (g->mode) {
         case GHOST_SCATTER:
@@ -126,8 +125,7 @@ void ghost_update_modes(Ghost ghosts[GHOST_COUNT], Map *map, Game *game)
         if (g->mode == GHOST_PEN) {
             static const int PEN_PELLET_TO_GO[] = { 0, 0, 30, 60 };
             int eaten = map->total_pellets - map->pellet_count;
-            
-            /* Délai de 1000ms après mort SEULEMENT si mode_timer > 0 */
+
             int should_wait_delay = (g->mode_timer > 0);
             Uint32 time_in_pen = should_wait_delay ? (SDL_GetTicks() - g->mode_timer) : 0;
             
