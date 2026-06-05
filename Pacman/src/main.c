@@ -2,6 +2,7 @@
 #include "../include/render.h"
 #include "../include/game.h"
 #include <SDL2/SDL.h>
+#include <time.h>
 
 int main(int argc, char *argv[])
 {
@@ -11,6 +12,7 @@ int main(int argc, char *argv[])
     SDL_Event e;
     int      running = 1;
 
+    srand(time(NULL));
     game_init(&game);
     render_init();
     game.last_tick = SDL_GetTicks();
@@ -28,7 +30,7 @@ int main(int argc, char *argv[])
                         running = 0;
                         break;
                     case SDLK_d:
-                        render_toggle_debug();   /* ← touche D */
+                        render_toggle_debug();   
                         break;
                     default:
                         break;
