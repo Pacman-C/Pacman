@@ -3,10 +3,7 @@
 
 #include <math.h>
 
-void render_entities_init(void)
-{
-    /* Rien à initialiser pour les entités pour le moment */
-}
+void render_entities_init(void){}
 
 static void render_pacman(const Game *game, Uint32 t)
 {
@@ -19,15 +16,12 @@ static void render_pacman(const Game *game, Uint32 t)
     SDL_SetRenderDrawColor(ren, 255, 255, 0, 255);
 
     if (game->state == STATE_PACMAN_DEAD) {
-        /* Bouche qui s'ouvre progressivement jusqu'à disparaître */
         Uint32 elapsed = SDL_GetTicks() - game->death_start;
-        int angle = (elapsed * 90) / 800;  /* 0 à 90 degrés en 800ms */
-        if (angle > 90) angle = 90;
+        int angle = (elapsed * 90) / 800;  
 
         for (int dy = -radius; dy <= radius; dy++) {
             for (int dx = -radius; dx <= radius; dx++) {
                 if (dx*dx + dy*dy <= radius*radius) {
-                    /* Exclure un triangle qui grandit */
                     if (abs(dy) < dx * angle / 90)
                         continue;
                     SDL_RenderDrawPoint(ren, cx + dx, cy + dy);
@@ -35,7 +29,6 @@ static void render_pacman(const Game *game, Uint32 t)
             }
         }
     } else {
-        /* Animation normale */
         int mouth = (t / 150) % 2;
         for (int dy = -radius; dy <= radius; dy++) {
             for (int dx = -radius; dx <= radius; dx++) {

@@ -1,5 +1,5 @@
-#include "../include/game.h"
 #include "../include/render.h"
+#include "../include/base.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -8,7 +8,6 @@ static SDL_Renderer *g_ren    = NULL;
 static SDL_Texture  *g_sprite = NULL;
 
 static int g_debug = 0;
-
 
 SDL_Renderer* render_get_renderer(void)
 {
@@ -20,17 +19,15 @@ SDL_Texture* render_get_sprite(void)
     return g_sprite;
 }
 
-
 void render_toggle_debug(void)
 {
     g_debug = !g_debug;
     render_debug_set_enabled(g_debug);
 }
 
-
 void render_init(void)
 {
-    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {
         fprintf(stderr, "SDL_Init: %s\n", SDL_GetError());
         exit(1);
     }
@@ -53,13 +50,33 @@ void render_init(void)
     SDL_FreeSurface(surf);
     if (!g_sprite) { fprintf(stderr, "SDL_CreateTextureFromSurface: %s\n", SDL_GetError()); exit(1); }
 
+    render_map_init();
     render_entities_init();
     render_debug_init();
 }
 
-
 void render_frame(const Game *game)
 {
+    if (game->state == STATE_TITLE) {
+        render_screen_title();
+        return;
+    }
+
+    if (game->state == STATE_LEVEL_TRANSITION) {
+        render_screen_level_transition(game);
+        return;
+    }
+
+    if (game->state == STATE_WIN) {
+        render_screen_victory(game->level);
+        return;
+    }
+
+    if (game->state == STATE_GAMEOVER) {
+        render_screen_game_over(game->player.score);
+        return;
+    }
+
     SDL_SetRenderDrawColor(g_ren, 0, 0, 0, 255);
     SDL_RenderClear(g_ren);
 
@@ -81,7 +98,6 @@ void render_frame(const Game *game)
 
     SDL_RenderPresent(g_ren);
 }
-
 
 void render_quit(void)
 {

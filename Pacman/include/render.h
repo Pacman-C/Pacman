@@ -1,11 +1,11 @@
 #ifndef RENDER_H
 #define RENDER_H
 
-
 #include <SDL2/SDL.h>
 #include <stdint.h>
 #include "base.h"
-
+#include "render_screens.h"
+#include "audio.h"
 
 void render_init(void);
 void render_frame(const Game *game);

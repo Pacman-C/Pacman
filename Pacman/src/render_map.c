@@ -1,6 +1,8 @@
 #include "../include/game.h"
 #include "../include/render.h"
 
+void render_map_init(void){}
+
 void render_map_draw(const Game *game, Uint32 t, int flash)
 {
     SDL_Renderer *ren = render_get_renderer();
@@ -37,13 +39,12 @@ void render_map_draw(const Game *game, Uint32 t, int flash)
         }
     }
 
-    /* Rendu des fruits */
     if (game->fruit_active)
     {
         SDL_Rect dst = {game->fruit_x * TILE_SIZE, game->fruit_y * TILE_SIZE, TILE_SIZE, TILE_SIZE};
 
         SDL_Rect src;
-        src.y = 0;  /* les fruits sont sur la ligne 0, à droite des fantômes */
+        src.y = 0;  
         src.w = TILE_SIZE;
         src.h = TILE_SIZE;
 
