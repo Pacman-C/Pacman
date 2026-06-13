@@ -3,7 +3,6 @@
  
 #include <SDL2/SDL.h>
  
-/* ── Dimensions ─────────────────────────────── */
 #define MAP_ROWS     31
 #define MAP_COLS     28
 #define TILE_SIZE    16
@@ -11,7 +10,6 @@
 #define WINDOW_W     (MAP_COLS * TILE_SIZE)
 #define WINDOW_H     (MAP_ROWS * TILE_SIZE)
  
-/* ── Tuiles ──────────────────────────────────── */
 #define TILE_EMPTY   ' '
 #define TILE_WALL    '#'
 #define TILE_PELLET     '.' 
@@ -19,7 +17,6 @@
 #define TILE_DOOR    '-' // porte de la cage
 #define TILE_TUNNEL  'T'    // passage qui TP entre les côtés gauche/droite
  
-/* ── Points ──────────────────────────────────── */
 #define PTS_DOT          10
 #define PTS_PELLET       50
 #define PTS_POWER_PELLET 500
@@ -46,21 +43,17 @@
 #define FRIGHTENED_DURATION  6000
 #define FRIGHTENED_FLASH     2000   // clignotement avant la fin
  
-/* ── Seuils ──────────────────────────────────── */
 #define CLYDE_THRESHOLD  8   // distance en tuiles
 #define PINKY_OFFSET     4   // cases devant Pac-Man
 
-/* ── Fruits ──────────────────────────────────── */
 #define TILE_FRUIT 'F'
 #define FRUIT_DURATION 10000    // 10 secondes
 #define FRUIT_SPAWN_1  70       // première apparition à 70 pastilles mangées
 #define FRUIT_SPAWN_2  170      // deuxième apparition
 
-// Dans base.h
 #define FRIGHTENED_DURATION_LVL(lvl) \
-    ((Uint32)((lvl) >= 17 ? 0 : (6000 - (lvl) * 300)))
+    ((Uint32)((lvl) >= 17 ? 1000 : (6000 - (lvl) * 300)))
  
-/* ── Directions ──────────────────────────────── */
 typedef enum {
     DIR_NONE  = -1,
     DIR_UP    =  0,
@@ -72,18 +65,18 @@ typedef enum {
 static const int DX[] = { 0,  0, -1,  1};
 static const int DY[] = {-1,  1,  0,  0};
  
-/* ── États de jeu ────────────────────────────── */
 typedef enum {
     STATE_MENU,
-    STATE_READY,        // écran "READY!" avant départ
+    STATE_READY,        
     STATE_PLAYING,
     STATE_PAUSED,
     STATE_PACMAN_DEAD,  // animation mort en cours
     STATE_GAMEOVER,
-    STATE_WIN
+    STATE_TITLE,
+    STATE_WIN,
+    STATE_LEVEL_TRANSITION
 } GameState;
  
-/* ── États fantôme ───────────────────────────── */
 typedef enum {
     GHOST_SCATTER,
     GHOST_CHASE,
@@ -93,7 +86,6 @@ typedef enum {
     GHOST_LEAVING       // en train de sortir
 } GhostMode;
  
-/* ── Identifiants fantômes ───────────────────── */
 typedef enum {
     BLINKY = 0,
     PINKY  = 1,
@@ -102,14 +94,12 @@ typedef enum {
     GHOST_COUNT
 } GhostId;
  
-/* ── Carte ───────────────────────────────────── */
 typedef struct {
     char grid[MAP_ROWS][MAP_COLS];
     int  pellet_count;     // gommes restantes
     int  total_pellets;     // pour le score et les bonus
 } Map;
  
-/* ── Entité générique ────────────────────────── */
 typedef struct {
     int       x, y;         // position en tuiles
     float       px, py;       // position en pixels (interpolation)
@@ -118,7 +108,6 @@ typedef struct {
     float     speed;        // tuiles/seconde
 } Entity;
  
-/* ── Fantôme ─────────────────────────────────── */
 typedef struct {
     Entity    entity;
     GhostId   id;
@@ -130,7 +119,6 @@ typedef struct {
     int       is_alive;
 } Ghost;
  
-/* ── Joueur ──────────────────────────────────── */
 typedef struct {
     Entity  entity;
     int     lives;
@@ -151,7 +139,6 @@ typedef enum {
     FRUIT_KEY
 } FruitType;
  
-/* ── État global du jeu ──────────────────────── */
 typedef struct {
     Map       map;
     Player    player;
@@ -163,13 +150,13 @@ typedef struct {
     int       high_score;
     int       ghosts_eaten_combo;   // nb fantômes mangés ce frightened (pour x2)
     Uint32    frightened_start;     // SDL_GetTicks() quand frightened a commencé
+    Uint32    death_start;          // SDL_GetTicks() quand mort a commencé (animation)
 
     Uint32    last_tick;
     int death_reset_done;
     int    scatter_chase_index;
     Uint32 scatter_chase_timer;
 
-    // Fruits
     int    fruit_x, fruit_y;        
     int    fruit_active;           
     Uint32 fruit_timer;            
@@ -182,10 +169,12 @@ typedef struct {
     int ghost_score_y;
 
     Uint32 ghost_score_timer;
+    int extra_life_earned;
+
+    Uint32 level_transition_start;  // Moment du début de la transition
 } Game;
 
 
-/* ── Macros utilitaires ──────────────────────── */
 #define DIST_SQ(ax, ay, bx, by) \
     (((ax)-(bx))*((ax)-(bx)) + ((ay)-(by))*((ay)-(by)))
  
