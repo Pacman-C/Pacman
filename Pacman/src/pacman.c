@@ -1,6 +1,7 @@
 #include "../include/pacman.h"
 #include "../include/map.h"
 #include "../include/game.h"
+#include "../include/audio.h"
 
 static int can_move(Map *map, int x, int y, Direction dir)
 {
@@ -91,6 +92,7 @@ static void pacman_collect_tile(Player *p, Map *map, Game *game)
         set_tile(map, e->x, e->y, TILE_EMPTY);
         map->pellet_count--;
         p->score += PTS_DOT;
+
         ate_pellet = 1;
     }
     else if (tile == TILE_POWER_PELLET)
@@ -100,6 +102,8 @@ static void pacman_collect_tile(Player *p, Map *map, Game *game)
         p->score += PTS_POWER_PELLET;
         p->is_powered = 1;
         p->power_timer = SDL_GetTicks();
+
+        audio_play(SOUND_POWER_UP);
         ate_pellet = 1;
     }
     else if (tile == TILE_FRUIT && game->fruit_active)
@@ -127,9 +131,14 @@ static void pacman_collect_tile(Player *p, Map *map, Game *game)
         game->ghost_score_timer   = SDL_GetTicks();
     }
 
-    if (ate_pellet) {
+    if (ate_pellet)
+    {
+        audio_play(SOUND_CHOMP);
+
         e->speed = SPEED_PACMAN_EATING + (game->level - 1) * 0.1f;
-    } else {
+    }
+    else
+    {
         e->speed = SPEED_PACMAN + (game->level - 1) * 0.1f;
     }
 }
