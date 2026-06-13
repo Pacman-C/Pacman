@@ -10,13 +10,13 @@ int main(int argc, char *argv[])
     (void)argc;
     (void)argv;
 
+
     Game game;
     SDL_Event e;
     int running = 1;
 
     srand(time(NULL));
 
-    /* SDL INIT */
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0)
     {
         printf("SDL_Init error: %s\n", SDL_GetError());
@@ -31,7 +31,6 @@ int main(int argc, char *argv[])
 
     game.last_tick = SDL_GetTicks();
 
-    /* TEST AUDIO */
     audio_play(SOUND_CHOMP);
 
     while (running)
@@ -57,7 +56,6 @@ int main(int argc, char *argv[])
                         audio_play(SOUND_CHOMP);
                         break;
 
-                    /* IMPORTANT: restart game */
                     case SDLK_r:
                         game_init(&game);
                         printf("Game restarted\n");
@@ -77,14 +75,9 @@ int main(int argc, char *argv[])
         game_update(&game, delta);
         render_frame(&game);
 
-        /* safety : si GAME OVER, tu peux choisir de freeze ou restart */
         if (game.state == STATE_GAMEOVER)
         {
-            // option 1 : freeze
             continue;
-
-            // option 2 : auto restart (décommenter si tu veux)
-            // game_init(&game);
         }
     }
 

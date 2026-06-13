@@ -95,7 +95,7 @@ static void render_ghost(const Game *game, int ghost_id, Uint32 t)
         else if (g->entity.dir == DIR_RIGHT) src.x = TILE_SIZE;
         else if (g->entity.dir == DIR_UP)    src.x = 2 * TILE_SIZE;
         else if (g->entity.dir == DIR_DOWN)  src.x = 3 * TILE_SIZE;
-        else                                 src.x = 0;  /* default si DIR_NONE */
+        else                                 src.x = 0;  
     }
 
     SDL_RenderCopy(ren, sprite, &src, &dst);

@@ -6,10 +6,10 @@ static int g_debug_enabled = 0;
 
 
 static const SDL_Color DEBUG_COLORS[GHOST_COUNT] = {
-    {222,   0,   0, 180},   /* Red */
-    {255, 184, 222, 180},   /* Pink */
-    {  0, 222, 222, 180},   /* Cyan */
-    {222, 133,   0, 180},   /* Orange */
+    {222,   0,   0, 180},   
+    {255, 184, 222, 180},   
+    {  0, 222, 222, 180},   
+    {222, 133,   0, 180},   
 };
 
 static const char *MODE_NAMES[] = {

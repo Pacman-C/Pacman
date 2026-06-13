@@ -22,9 +22,6 @@ typedef struct {
 static Sound sounds[SOUND_COUNT];
 static SDL_AudioSpec audio_spec;
 
-/* =========================
-   UTIL : sine wave U8 FIX
-   ========================= */
 static Uint8 encode_sample(float sample)
 {
     if (sample > 1.0f) sample = 1.0f;
@@ -47,9 +44,6 @@ static Uint8* generate_sine_wave(int frequency, int duration_ms, int *out_len)
     return buffer;
 }
 
-/* =========================
-   SFX INIT
-   ========================= */
 
 static void sound_chomp_init(void)
 {
@@ -192,9 +186,7 @@ static void sound_game_over_init(void)
     }
 }
 
-/* =========================
-   API
-   ========================= */
+
 
 void audio_init(void)
 {

@@ -154,7 +154,6 @@ void render_screen_level_transition(const Game *game)
     Uint32 t = SDL_GetTicks();
     int flash = (t / 200) % 2;
 
-    /* Fait clignoter les murs bleu/blanc */
     render_map_draw(game, t, flash);
 
     SDL_Color cyan  = {0, 222, 222, 255};
