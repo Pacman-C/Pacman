@@ -23,6 +23,7 @@ typedef struct {
     int       target_x, target_y;
     Uint32    mode_timer;
     int       is_alive;
+    int       force_leave;
 } Ghost;
 
 /* ── Joueur ──────────────────────────────────── */

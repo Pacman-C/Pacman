@@ -50,14 +50,14 @@ void render_map_draw(const Game *game, Uint32 t, int flash)
 
         switch (game->fruit_type)
         {
-            case FRUIT_CHERRY:     src.x = 4 * TILE_SIZE; break;  /* x=64 */
-            case FRUIT_STRAWBERRY: src.x = 5 * TILE_SIZE; break;  /* x=80 */
-            case FRUIT_ORANGE:     src.x = 6 * TILE_SIZE; break;  /* x=96 */
-            case FRUIT_APPLE:      src.x = 7 * TILE_SIZE; break;  /* x=112 */
-            case FRUIT_MELON:      src.x = 8 * TILE_SIZE; break;  /* x=128 */
-            case FRUIT_GALAXIAN:   src.x = 9 * TILE_SIZE; break;  /* x=144 */
-            case FRUIT_BELL:       src.x = 10 * TILE_SIZE; break; /* x=160 */
-            case FRUIT_KEY:        src.x = 11 * TILE_SIZE; break; /* x=176 */
+            case FRUIT_CHERRY:     src.x = 4 * TILE_SIZE; break;  
+            case FRUIT_STRAWBERRY: src.x = 5 * TILE_SIZE; break;  
+            case FRUIT_ORANGE:     src.x = 6 * TILE_SIZE; break;  
+            case FRUIT_APPLE:      src.x = 7 * TILE_SIZE; break;  
+            case FRUIT_MELON:      src.x = 8 * TILE_SIZE; break;  
+            case FRUIT_GALAXIAN:   src.x = 9 * TILE_SIZE; break;  
+            case FRUIT_BELL:       src.x = 10 * TILE_SIZE; break;
+            case FRUIT_KEY:        src.x = 11 * TILE_SIZE; break; 
         }
 
         SDL_RenderCopy(ren, sprite, &src, &dst);
