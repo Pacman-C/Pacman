@@ -76,12 +76,13 @@ void ghost_leave_pen(Ghost *g, float delta, int level)
 
 void ghost_return_to_pen(Ghost *g)
 {
+    printf("[GHOST %d] return_to_pen force_leave mis a 1\n", g->id);
     g->entity.x  = 14;
     g->entity.y  = 14;
     g->entity.px = 14 * TILE_SIZE;
     g->entity.py = 14 * TILE_SIZE;
-    g->mode      = GHOST_LEAVING; 
-    g->mode_timer = SDL_GetTicks(); 
+    g->mode        = GHOST_PEN;
+    g->force_leave = 1;
 }
 
 void ghost_check_collision(Ghost *g, Player *p, Game *game)
@@ -133,6 +134,7 @@ void ghost_init(Ghost ghosts[GHOST_COUNT])
         g->mode_timer   = 0;
         g->is_alive     = 1;
         g->mode_before_fright = GHOST_SCATTER;
+        g->force_leave  = 0;
     }
 }
 
