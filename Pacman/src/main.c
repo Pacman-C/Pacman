@@ -19,11 +19,9 @@ int main(int argc, char *argv[])
 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0)
     {
-        printf("SDL_Init error: %s\n", SDL_GetError());
         return 1;
     }
 
-    printf("SDL initialisé OK\n");
 
     game_init(&game);
     render_init();

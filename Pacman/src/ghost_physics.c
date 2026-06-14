@@ -76,7 +76,6 @@ void ghost_leave_pen(Ghost *g, float delta, int level)
 
 void ghost_return_to_pen(Ghost *g)
 {
-    printf("[GHOST %d] return_to_pen force_leave mis a 1\n", g->id);
     g->entity.x  = 14;
     g->entity.y  = 14;
     g->entity.px = 14 * TILE_SIZE;
