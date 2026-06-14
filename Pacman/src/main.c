@@ -56,7 +56,6 @@ int main(int argc, char *argv[])
 
                     case SDLK_r:
                         game_init(&game);
-                        printf("Game restarted\n");
                         break;
 
                     default:
