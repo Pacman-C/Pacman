@@ -70,9 +70,4 @@ typedef struct {
     Uint32    level_transition_start;
 } Game;
 
-#define DIST_SQ(ax, ay, bx, by) \
-    (((ax)-(bx))*((ax)-(bx)) + ((ay)-(by))*((ay)-(by)))
-
-#define WRAP_COL(c) (((c) % MAP_COLS + MAP_COLS) % MAP_COLS)
-
 #endif /* BASE_H */

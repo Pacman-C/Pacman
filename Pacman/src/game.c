@@ -209,17 +209,6 @@ void game_update(Game *game, float delta)
 }
 
 
-void game_pacman_ate_pellet(Game *game)
-{
-    (void)game;
-}
-
-void game_pacman_ate_ghost(Game *game)
-{
-    (void)game;
-}
-
-
 void game_start_next_level(Game *game)
 {
     game->level++;

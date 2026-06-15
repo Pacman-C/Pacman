@@ -27,11 +27,6 @@ void render_toggle_debug(void)
 
 void render_init(void)
 {
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {
-        fprintf(stderr, "SDL_Init: %s\n", SDL_GetError());
-        exit(1);
-    }
-
     g_win = SDL_CreateWindow(
         "Pac-Man",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,

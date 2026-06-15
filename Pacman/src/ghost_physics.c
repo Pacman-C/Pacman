@@ -76,7 +76,6 @@ void ghost_leave_pen(Ghost *g, float delta, int level)
 
 void ghost_return_to_pen(Ghost *g)
 {
-    printf("[GHOST %d] return_to_pen force_leave mis a 1\n", g->id);
     g->entity.x  = 14;
     g->entity.y  = 14;
     g->entity.px = 14 * TILE_SIZE;
@@ -163,8 +162,13 @@ void ghost_update(Ghost ghosts[GHOST_COUNT], Map *map, Player *p, float delta, G
         ghost_move(g, map, delta, game->level);
         ghost_check_collision(g, p, game);  
 
-        if (g->mode == GHOST_DEAD &&
-            g->entity.x == PEN_EXIT_X && g->entity.y == PEN_EXIT_Y)
-            ghost_return_to_pen(g);
+        if (g->mode == GHOST_DEAD) {
+            float target_px = PEN_EXIT_X * TILE_SIZE;
+            float target_py = PEN_EXIT_Y * TILE_SIZE;
+            float ddx = g->entity.px - target_px;
+            float ddy = g->entity.py - target_py;
+            if (ddx * ddx + ddy * ddy < (TILE_SIZE * TILE_SIZE))
+                ghost_return_to_pen(g);
+        }
     }
 }
